@@ -18,9 +18,6 @@ export function Welcome() {
         <h2 id="leer" className="display m-0 mt-1 text-[26px] font-extrabold leading-[1.1] tracking-[-0.4px]">
           Dein Dönerbuch ist noch leer
         </h2>
-        <p className="m-0 text-[15px] leading-[1.45] text-muted">
-          Trag deinen ersten Döner ein – mit Ort, Preis und Bewertung. Ab dann wächst dein Journal mit jedem Bissen.
-        </p>
         <Link href="/neu" className="btn btn-primary mt-1.5 self-stretch">
           <Plus size={20} strokeWidth={2.6} aria-hidden="true" />
           Ersten Döner eintragen
