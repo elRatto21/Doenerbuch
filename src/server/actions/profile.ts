@@ -27,25 +27,23 @@ export async function chooseUsername(_prev: FormState, formData: FormData): Prom
   const parsed = usernameSchema.safeParse(formData.get("username"));
   if (!parsed.success) return { fieldErrors: { username: parsed.error.issues[0]!.message } };
   if (await usernameTaken(parsed.data, current.id)) return { fieldErrors: { username: "Dieser Username ist schon vergeben." } };
-  await db.update(user).set({ username: parsed.data, displayUsername: parsed.data, updatedAt: new Date() }).where(eq(user.id, current.id));
+  // the app shows only the username; `name` (required by Better Auth) mirrors it
+  await db.update(user).set({ name: parsed.data, username: parsed.data, displayUsername: parsed.data, updatedAt: new Date() }).where(eq(user.id, current.id));
   redirect("/");
 }
 
-const profileSchema = z.object({
-  name: z.string().trim().min(1, "Name fehlt").max(60),
-  username: usernameSchema,
-});
+const profileSchema = z.object({ username: usernameSchema });
 
 export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
   const current = await requireUser();
-  const parsed = profileSchema.safeParse({ name: formData.get("name"), username: formData.get("username") });
+  const parsed = profileSchema.safeParse({ username: formData.get("username") });
   if (!parsed.success) {
     return { fieldErrors: Object.fromEntries(parsed.error.issues.map((i) => [String(i.path[0]), i.message])) };
   }
   if (await usernameTaken(parsed.data.username, current.id)) return { fieldErrors: { username: "Dieser Username ist schon vergeben." } };
   await db
     .update(user)
-    .set({ name: parsed.data.name, username: parsed.data.username, displayUsername: parsed.data.username, updatedAt: new Date() })
+    .set({ name: parsed.data.username, username: parsed.data.username, displayUsername: parsed.data.username, updatedAt: new Date() })
     .where(eq(user.id, current.id));
   revalidatePath("/", "layout");
   return { ok: true };

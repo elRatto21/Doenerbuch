@@ -58,7 +58,6 @@ export function ProfileForm({ name, username, avatarUrl, photosEnabled }: { name
       </div>
 
       <form action={action} className="card flex flex-col gap-3.5 p-4">
-        <FormField id="name" label="Name" defaultValue={name} autoComplete="name" error={state?.fieldErrors?.name} required />
         <FormField
           id="username"
           label="Username"

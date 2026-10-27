@@ -33,9 +33,9 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
           <section className="card flex flex-col items-center gap-3 rounded-[20px] p-6 text-center shadow-hard-lg">
             <Avatar name={other.name} imageUrl={await photoUrl(other.avatarKey)} size={88} highlight className="!border-2 text-3xl" />
             <div>
-              <h2 className="display m-0 text-2xl font-extrabold">{other.name}</h2>
+              <h2 className="display m-0 text-2xl font-extrabold">{other.username}</h2>
               <p className="m-0 mt-1 text-sm text-muted">
-                @{other.username} · {await entryCount(other.id)} Döner
+                {await entryCount(other.id)} Döner
               </p>
             </div>
             <p className="m-0 text-[15px] text-muted">möchte mit dir im Dönerbuch vergleichen.</p>

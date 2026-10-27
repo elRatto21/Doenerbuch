@@ -6,7 +6,6 @@ test.use({ permissions: [] });
 test("set the location by hand in the map overlay", async ({ page }) => {
   const id = Date.now().toString(36);
   await page.goto("/registrieren");
-  await page.getByLabel("Name", { exact: true }).fill("Picker Tester");
   await page.getByLabel("Username", { exact: true }).fill(`pick_${id}`);
   await page.getByLabel("E-Mail", { exact: true }).fill(`pick-${id}@example.com`);
   await page.getByLabel("Passwort", { exact: true }).fill("password123");

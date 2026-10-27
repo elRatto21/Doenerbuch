@@ -7,7 +7,6 @@ test("register, add a döner and see it in journal and stats", async ({ page }) 
   await expect(page).toHaveURL(/\/login/);
   await page.getByRole("link", { name: "Registrieren", exact: true }).click();
 
-  await page.getByLabel("Name", { exact: true }).fill("E2E Tester");
   await page.getByLabel("Username", { exact: true }).fill(`e2e_${id}`);
   await page.getByLabel("E-Mail", { exact: true }).fill(`e2e-${id}@example.com`);
   await page.getByLabel("Passwort", { exact: true }).fill("password123");

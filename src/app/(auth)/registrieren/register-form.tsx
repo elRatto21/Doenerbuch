@@ -7,7 +7,7 @@ import { AuthShell, FormError, FormField } from "@/components/auth/auth-shell";
 import { authClient } from "@/lib/auth-client";
 import { USERNAME_PATTERN } from "@/lib/validation";
 
-type Errors = Partial<Record<"name" | "username" | "email" | "password", string>>;
+type Errors = Partial<Record<"username" | "email" | "password", string>>;
 
 export function RegisterForm({ next }: { next: string }) {
   const router = useRouter();
@@ -25,13 +25,11 @@ export function RegisterForm({ next }: { next: string }) {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const name = String(form.get("name") ?? "").trim();
     const username = String(form.get("username") ?? "").trim().toLowerCase();
     const email = String(form.get("email") ?? "").trim();
     const password = String(form.get("password") ?? "");
 
     const problems: Errors = {};
-    if (!name) problems.name = "Wie heißt du?";
     if (!USERNAME_PATTERN.test(username)) problems.username = "3–24 Zeichen: a–z, 0–9, Punkt oder Unterstrich.";
     if (!/^\S+@\S+\.\S+$/.test(email)) problems.email = "Bitte gib eine gültige E-Mail ein.";
     if (password.length < 8) problems.password = "Mindestens 8 Zeichen.";
@@ -40,7 +38,7 @@ export function RegisterForm({ next }: { next: string }) {
 
     setPending(true);
     setFormError(null);
-    const result = await authClient.signUp.email({ name, email, password, username, displayUsername: username });
+    const result = await authClient.signUp.email({ name: username, email, password, username, displayUsername: username });
     if (result.error) {
       setPending(false);
       const code = result.error.code ?? "";
@@ -56,7 +54,6 @@ export function RegisterForm({ next }: { next: string }) {
   return (
     <AuthShell title="Konto erstellen" subtitle="Ab jetzt zählt jeder Döner." backHref={next === "/" ? "/login" : `/login?next=${encodeURIComponent(next)}`}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5" noValidate>
-        <FormField id="name" label="Name" autoComplete="name" error={errors.name} required />
         <FormField
           id="username"
           label="Username"

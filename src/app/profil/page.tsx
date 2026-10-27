@@ -24,9 +24,9 @@ export default async function ProfilePage() {
         <section aria-label="Über dich" className="card flex items-center gap-3.5 p-4">
           <Avatar name={me.name} imageUrl={avatarUrl} size={64} highlight className="!border-2 text-2xl" />
           <div className="min-w-0 flex-1">
-            <div className="display truncate text-[22px] font-extrabold">{me.name}</div>
+            <div className="display truncate text-[22px] font-extrabold">{me.username}</div>
             <div className="text-[13px] leading-snug text-muted">
-              @{me.username} · dabei seit {fmt(me.createdAt, "LLL yyyy")}
+              dabei seit {fmt(me.createdAt, "LLL yyyy")}
             </div>
           </div>
           <Link href="/profil/bearbeiten" className="btn btn-secondary h-11 rounded-[10px] px-3 text-[13px]">

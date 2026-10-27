@@ -48,7 +48,7 @@ async function main() {
       ids[u.key] = existing.id;
       continue;
     }
-    const res = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: u.name, username: u.username, displayUsername: u.username } });
+    const res = await auth.api.signUpEmail({ body: { email, password: PASSWORD, name: u.username, username: u.username, displayUsername: u.username } });
     ids[u.key] = res.user.id;
   }
   await db.update(user).set({ createdAt: new Date("2026-01-08T10:00:00Z") }).where(eq(user.id, ids.niklas));

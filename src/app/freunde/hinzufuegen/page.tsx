@@ -70,9 +70,9 @@ export default async function AddFriendPage({ searchParams }: { searchParams: Pr
                 <li key={r.id} className={`flex items-center gap-3 px-3 py-2.5 ${i > 0 ? "border-t-2 border-hairline" : ""}`}>
                   <Avatar name={r.name} imageUrl={avatarUrls.get(r.id)} size={40} />
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-[15px] font-bold">{r.name}</span>
+                    <span className="truncate text-[15px] font-bold">{r.username}</span>
                     <span className="truncate text-xs text-muted">
-                      @{r.username} · {r.relation === "friends" ? "bereits befreundet" : `${r.entryCount} Döner`}
+                      {r.relation === "friends" ? "bereits befreundet" : `${r.entryCount} Döner`}
                     </span>
                   </span>
                   <RelationButton userId={r.id} relation={r.relation} />
