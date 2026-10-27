@@ -19,8 +19,8 @@ test("register, add a döner and see it in journal and stats", async ({ page }) 
 
   // step 1
   await expect(page.getByRole("heading", { name: "Neuer Döner" })).toBeVisible();
-  await page.getByLabel("Sorte").selectOption({ label: "Dürüm" });
-  await page.getByRole("radio", { name: "Hähnchen" }).click();
+  await page.getByLabel("Sorte", { exact: true }).selectOption({ label: "Dürüm" });
+  await page.getByLabel("Fleisch", { exact: true }).selectOption({ label: "Hähnchen" });
   await page.getByRole("combobox", { name: "Name des Imbiss" }).fill("Bosporus Grill");
   await expect(page.getByText("Standort erfasst")).toBeVisible();
   await page.getByLabel("Preis").fill("7,50");

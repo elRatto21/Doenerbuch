@@ -107,7 +107,7 @@ export const verification = pgTable(
 // App tables
 // ---------------------------------------------------------------------------
 
-export const meatEnum = pgEnum("meat", ["kalb", "haehnchen", "gemischt", "veggie"]);
+export const meatEnum = pgEnum("meat", ["kalb", "haehnchen", "hack", "steak", "veggie", "unbekannt"]);
 export const friendshipStatusEnum = pgEnum("friendship_status", ["pending", "accepted", "declined"]);
 
 /** userId null = standard type available to everyone. */

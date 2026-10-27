@@ -12,12 +12,14 @@ export const CURRENCIES = ["EUR", "CHF", "GBP", "USD", "TRY", "PLN", "CZK", "DKK
 export type Currency = (typeof CURRENCIES)[number];
 export const currencySchema = z.enum(CURRENCIES);
 
-export const MEATS = ["kalb", "haehnchen", "gemischt", "veggie"] as const;
+export const MEATS = ["kalb", "haehnchen", "hack", "steak", "veggie", "unbekannt"] as const;
 export const MEAT_LABEL: Record<(typeof MEATS)[number], string> = {
   kalb: "Kalb",
   haehnchen: "Hähnchen",
-  gemischt: "Gemischt",
+  hack: "Hack",
+  steak: "Steak",
   veggie: "Veggie",
+  unbekannt: "Unbekannt",
 };
 
 export const RATING_CATEGORIES = [

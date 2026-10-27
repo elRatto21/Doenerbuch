@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import type { Meat } from "@/db/schema";
 import type { RatingKey } from "@/lib/validation";
 
 export type DraftRatings = Record<RatingKey, number | null>;
@@ -17,7 +18,7 @@ export type EntryDraft = {
   date: string; // yyyy-MM-dd (device local)
   time: string; // HH:mm
   typeId: number | null;
-  meat: "kalb" | "haehnchen" | "gemischt" | "veggie";
+  meat: Meat;
   placeId: number | null;
   placeName: string;
   placeAddress: string | null;

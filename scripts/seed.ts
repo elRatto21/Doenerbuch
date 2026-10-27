@@ -117,7 +117,7 @@ async function main() {
   await add("niklas", "bosporus", "2026-10-27T10:40:00Z", "Dürüm", 5, 750, { with: ["lena"], note: "Extra scharf, Brot frisch vom Grill. Bester Dürüm in der Stadt.", ratings: [5, 4, 5, 4, 4, 5] });
   await add("niklas", "anatolia", "2026-10-24T17:30:00Z", "Döner", 4, 690);
   await add("niklas", "ece", "2026-10-19T11:15:00Z", "Döner-Box", 3, 800, { with: ["tim", "jonas"], meat: "haehnchen" });
-  await add("niklas", "mangal", "2026-10-15T18:45:00Z", "Teller", 4, 1150, { with: ["lena"], meat: "gemischt" });
+  await add("niklas", "mangal", "2026-10-15T18:45:00Z", "Teller", 4, 1150, { with: ["lena"], meat: "hack" });
   await add("niklas", "bosporus", "2026-10-11T12:05:00Z", "Döner", 5, 750);
   await add("niklas", "lahmacun", "2026-10-04T12:30:00Z", "Lahmacun", 4, 450, { meat: "veggie" });
   // older history

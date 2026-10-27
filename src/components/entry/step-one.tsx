@@ -239,16 +239,8 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
 
         <fieldset className="m-0 border-0 p-0">
           <legend className="display mb-2 p-0 text-base font-bold">Was?</legend>
-          <div className="relative">
-            <label htmlFor="sorte" className="sr-only">
-              Sorte
-            </label>
-            <select
-              id="sorte"
-              value={draft.typeId ?? ""}
-              onChange={(e) => update({ typeId: e.target.value ? Number(e.target.value) : null })}
-              className="field cursor-pointer appearance-none pr-11 text-base"
-            >
+          <div className="grid grid-cols-2 gap-2.5">
+            <SelectField id="sorte" label="Sorte" value={draft.typeId ?? ""} onChange={(v) => update({ typeId: v ? Number(v) : null })}>
               {draft.typeId == null ? (
                 <option value="" disabled>
                   Sorte wählen
@@ -259,25 +251,14 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
                   {t.name}
                 </option>
               ))}
-            </select>
-            <ChevronDown size={20} strokeWidth={2.4} aria-hidden="true" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" />
-          </div>
-          <div role="radiogroup" aria-label="Fleisch" className="mt-2.5 grid grid-cols-4 overflow-hidden rounded-xl border-2 border-ink bg-surface">
-            {MEATS.map((m, i) => {
-              const on = draft.meat === m;
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => update({ meat: m })}
-                  className={`h-11 cursor-pointer text-[13px] ${i > 0 ? "border-l-2 border-ink" : ""} ${on ? "bg-ink font-bold text-white" : "bg-surface font-medium text-ink"}`}
-                >
+            </SelectField>
+            <SelectField id="fleisch" label="Fleisch" value={draft.meat} onChange={(v) => update({ meat: v as EntryDraft["meat"] })}>
+              {MEATS.map((m) => (
+                <option key={m} value={m}>
                   {MEAT_LABEL[m]}
-                </button>
-              );
-            })}
+                </option>
+              ))}
+            </SelectField>
           </div>
         </fieldset>
 
@@ -379,6 +360,34 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
         </div>
       </form>
     </main>
+  );
+}
+
+function SelectField({
+  id,
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  id: string;
+  label: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <label htmlFor={id} className="text-[13px] font-bold text-muted">
+        {label}
+      </label>
+      <div className="relative">
+        <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="field cursor-pointer appearance-none truncate pr-10 text-base">
+          {children}
+        </select>
+        <ChevronDown size={20} strokeWidth={2.4} aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+      </div>
+    </div>
   );
 }
 
