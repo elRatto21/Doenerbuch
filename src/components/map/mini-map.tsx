@@ -93,7 +93,7 @@ export function MiniMap({ position, accuracyM, onPick, interactive = false, clas
       created?.remove();
       mapRef.current = null;
     };
-  }, [interactive]);
+  }, [interactive, attribution]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import { BottomNav } from "@/components/bottom-nav";
+import { Pwa } from "@/components/pwa";
 import { getCurrentUser } from "@/lib/session";
 import { pendingIncomingCount } from "@/server/queries/friends";
 import "./globals.css";
@@ -44,10 +45,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="de" className={`${bricolage.variable} ${dmSans.variable}`}>
       <body className="min-h-dvh antialiased md:bg-map">
-        <div className="relative mx-auto min-h-dvh w-full max-w-[480px] bg-ground md:border-x-2 md:border-ink">
-          {children}
-        </div>
-        <BottomNav friendsBadge={friendsBadge} />
+        <Pwa>
+          <div className="relative mx-auto min-h-dvh w-full max-w-[480px] bg-ground md:border-x-2 md:border-ink">
+            {children}
+          </div>
+          <BottomNav friendsBadge={friendsBadge} />
+        </Pwa>
       </body>
     </html>
   );

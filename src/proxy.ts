@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/registrieren", "/offline"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) return NextResponse.next();
 
@@ -18,5 +18,5 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   // everything except API, Next internals, PWA files and static assets
-  matcher: ["/((?!api|_next/static|_next/image|sw.js|swe-worker|maplibre-gl-worker|manifest.webmanifest|icons|favicon|robots.txt).*)"],
+  matcher: ["/((?!api|_next/static|_next/image|serwist|maplibre-gl-worker|manifest.webmanifest|icons|favicon|robots.txt).*)"],
 };

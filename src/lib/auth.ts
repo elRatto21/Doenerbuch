@@ -9,8 +9,13 @@ import { USERNAME_PATTERN } from "@/lib/validation";
 
 export const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
+// `next build` imports this module while collecting page data; the build must not need
+// runtime secrets (e.g. on Coolify/Nixpacks). At runtime a missing secret still fails.
+const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
+  secret: process.env.BETTER_AUTH_SECRET || (isBuild ? "build-time-placeholder-secret-not-used-at-runtime" : undefined),
   database: drizzleAdapter(db, { provider: "pg", schema }),
   emailAndPassword: { enabled: true, minPasswordLength: 8, autoSignIn: true },
   socialProviders: googleEnabled

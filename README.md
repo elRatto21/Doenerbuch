@@ -4,15 +4,14 @@ Mobile-first PWA for tracking your Döner: type, place (GPS), price, then a rati
 
 Design reference and the original handoff: [`docs/HANDOFF.md`](docs/HANDOFF.md), [`docs/design/`](docs/design).
 
-**Stack:** Next.js 15 (App Router, Server Actions, TS strict) · Tailwind CSS v4 · PostgreSQL + Drizzle ORM · Better Auth (email/password + optional Google) · MapLibre GL + OpenFreeMap · Nominatim reverse geocoding · S3/MinIO photo uploads · Serwist service worker · zod · date-fns.
+**Stack:** Next.js 16 (App Router, Turbopack, Server Actions, TS strict) · React 19 · Tailwind CSS v4 · PostgreSQL + Drizzle ORM · Better Auth (email/password + optional Google) · MapLibre GL + OpenFreeMap · Nominatim reverse geocoding · S3/MinIO photo uploads · Serwist service worker (`@serwist/turbopack`) · zod · date-fns.
 
 ## Quick start (local)
 
-Requirements: Node 22, pnpm 10, Docker.
+Requirements: Node 24, pnpm 10 (`corepack enable`), a PostgreSQL database and, for photos, an S3-compatible bucket (MinIO).
 
 ```bash
-cp .env.example .env          # set BETTER_AUTH_SECRET (openssl rand -base64 32)
-docker compose up -d          # Postgres :5432, MinIO :9000 (console :9001), bucket "doenerbuch"
+cp .env.example .env          # DATABASE_URL, BETTER_AUTH_SECRET (openssl rand -base64 32), S3_*
 pnpm install
 pnpm db:migrate               # migrations + badges/standard types
 pnpm db:seed                  # optional demo data
@@ -30,13 +29,13 @@ Geolocation needs a secure context. `localhost` works; to test on a phone use an
 | `pnpm dev` / `build` / `start` | Next.js |
 | `pnpm lint` / `typecheck` | ESLint, `tsc --noEmit` |
 | `pnpm test` | Vitest: unit tests + DB tests for stats, ranking, feed, places, badges (uses `TEST_DATABASE_URL`, default `postgres://doener:doener@localhost:5432/doenerbuch_test` – the DB is wiped) |
-| `pnpm test:e2e` | Playwright smoke test of the entry flow (needs `pnpm build` and a migrated `DATABASE_URL`) |
+| `pnpm test:e2e` | Playwright smoke test of the entry flow (needs `pnpm build` and a migrated `DATABASE_URL`; set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to use an existing Chromium) |
 | `pnpm db:generate` | Create a migration from `src/db/schema.ts` |
 | `pnpm db:migrate` | Apply migrations and sync badges/standard types |
 | `pnpm db:seed` | Demo data with the names from the designs |
 | `pnpm icons` | Re-render PWA icons into `public/icons` |
 
-Create the test DB once: `createdb -U doener doenerbuch_test` (or `docker compose exec db createdb -U doener doenerbuch_test`).
+Create the test DB once: `createdb doenerbuch_test`.
 
 ## Environment
 
@@ -47,21 +46,19 @@ See [`.env.example`](.env.example). Required in production: `DATABASE_URL`, `BET
 - **Map tiles** come from OpenFreeMap (no key). Swap with `NEXT_PUBLIC_MAP_STYLE_URL` (build-time).
 - **Geocoding** sits behind the `Geocoder` interface in `src/server/geocode.ts`. Nominatim is rate-limited to 1 request/s per server process and cached on an ~11 m grid.
 
-## Deploy on Coolify
+## Deploy on Coolify (Nixpacks)
 
-1. **Postgres:** create a PostgreSQL 16 resource and copy its internal connection URL into `DATABASE_URL`.
-2. **MinIO:** create a bucket (e.g. `doenerbuch`), keep it private, and create an access key with read/write on it.
-   - The browser uploads directly to MinIO with a presigned POST, so the S3 API must be reachable from the internet. Set `S3_PUBLIC_ENDPOINT` to the public HTTPS URL; `S3_ENDPOINT` can be the internal URL.
-   - Allow your app origin via CORS: MinIO's default `MINIO_API_CORS_ALLOW_ORIGIN=*` works; tighten it to `https://<your-domain>` if you like.
-3. **App:** add the repo as a *Dockerfile* application, port `3000`.
-   - Set the runtime env vars from `.env.example`.
-   - Pass `NEXT_PUBLIC_APP_URL` (and optionally `NEXT_PUBLIC_MAP_STYLE_URL`) as **build arguments**.
-   - The container runs pending migrations on start (`RUN_MIGRATIONS=true`) and exposes `GET /api/health` for the health check.
+1. **Postgres:** create a PostgreSQL resource and use its internal URL as `DATABASE_URL`.
+2. **MinIO:** create a private bucket (e.g. `doenerbuch`) and an access key with read/write on it. Browsers upload directly with a presigned POST, so the S3 API must be publicly reachable: set `S3_PUBLIC_ENDPOINT` to its public HTTPS URL (`S3_ENDPOINT` may be the internal one) and allow your app origin via CORS (MinIO's default `MINIO_API_CORS_ALLOW_ORIGIN=*` works).
+3. **App:** add the repository with build pack **Nixpacks**, the branch you deploy (currently `feat/mvp` – the repo has no `main` yet), base directory `/`, port **3000**. Set the env vars from `.env.example`.
+   - Nixpacks picks Node 24 from `engines` and pnpm 10 via corepack; `nixpacks.toml` installs a current corepack (Nixpacks' bundled one can't fetch pnpm 10) and starts with `pnpm start`.
+   - The build doesn't need any secrets, so env vars don't have to be marked "available at build time" – except `NEXT_PUBLIC_MAP_STYLE_URL` if you change it (inlined into the client bundle).
+   - Pending migrations run automatically on start (`RUN_MIGRATIONS=false` to opt out). Health check: `GET /api/health`.
 
 ## Project layout
 
 ```
-src/app/            routes (see table below), API routes for auth, geocoding, CSV export, health
+src/app/            routes (see table below), API routes for auth, geocoding, CSV export, health; /serwist/sw.js
 src/components/     UI, grouped by screen (entry, journal, detail, map, friends, profile)
 src/server/queries/ all DB reads/writes – SQL aggregations for stats, ranking, feed, map
 src/server/actions/ server actions (zod-validated, always scoped to the session user)

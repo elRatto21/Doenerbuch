@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { RatingKey } from "@/lib/validation";
@@ -63,13 +63,11 @@ export const useEntryDraft = create<Store>()(
 /** Drafts older than this are discarded when opening /neu. */
 export const DRAFT_MAX_AGE_MS = 3 * 60 * 60 * 1000;
 
-/** True once the draft was restored from sessionStorage (client only). */
+/** True once the draft was restored from sessionStorage (always false on the server). */
 export function useDraftHydrated(): boolean {
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    const unsubscribe = useEntryDraft.persist.onFinishHydration(() => setHydrated(true));
-    setHydrated(useEntryDraft.persist.hasHydrated());
-    return unsubscribe;
-  }, []);
-  return hydrated;
+  return useSyncExternalStore(
+    (onChange) => useEntryDraft.persist.onFinishHydration(onChange),
+    () => useEntryDraft.persist.hasHydrated(),
+    () => false,
+  );
 }

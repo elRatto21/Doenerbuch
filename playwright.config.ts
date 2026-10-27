@@ -15,6 +15,8 @@ export default defineConfig({
     geolocation: { latitude: 50.93842, longitude: 6.94975, accuracy: 8 },
     permissions: ["geolocation"],
     trace: "retain-on-failure",
+    // optional: use a preinstalled Chromium instead of the one Playwright downloads
+    launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE } : {},
   },
   projects: [{ name: "mobile-chromium", use: { browserName: "chromium" } }],
   webServer: {

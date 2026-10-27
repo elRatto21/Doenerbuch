@@ -3,8 +3,9 @@ import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { db } from "@/db";
 import { syncReferenceData } from "@/server/reference-data";
 
-// In Docker, apply pending migrations before serving traffic.
-if (process.env.RUN_MIGRATIONS === "true") {
+// In production, apply pending migrations before serving traffic (opt out with RUN_MIGRATIONS=false).
+const runMigrations = process.env.RUN_MIGRATIONS ? process.env.RUN_MIGRATIONS === "true" : process.env.NODE_ENV === "production";
+if (runMigrations) {
   await migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") });
   console.log("[db] migrations applied");
 }
