@@ -69,9 +69,9 @@ export function FormError({ message }: { message: string | null }) {
   );
 }
 
-export function GoogleButton({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
+export function GoogleButton({ onClick, disabled, className = "h-14" }: { onClick: () => void; disabled?: boolean; className?: string }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className="btn btn-secondary h-14 w-full rounded-[14px] text-[16px]">
+    <button type="button" onClick={onClick} disabled={disabled} className={`btn btn-secondary w-full rounded-[14px] text-[16px] ${className}`}>
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
         <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.7z" />
         <path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.9-3c-1.1.7-2.4 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9h-4v3.1A12 12 0 0 0 12 24z" />
