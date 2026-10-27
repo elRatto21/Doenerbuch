@@ -66,8 +66,13 @@ export function CurrencyRow({ currency }: { currency: string }) {
         onChange={(e) => {
           const next = e.target.value;
           setValue(next);
+          const previous = value;
           startTransition(async () => {
-            await updateSettings({ currency: next as UserSettings["currency"] });
+            try {
+              await updateSettings({ currency: next as UserSettings["currency"] });
+            } catch {
+              setValue(previous);
+            }
           });
         }}
         className="absolute inset-0 cursor-pointer opacity-0"

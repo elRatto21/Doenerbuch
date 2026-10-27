@@ -66,3 +66,9 @@ export const ratingInputSchema = z.object({
   note: z.string().trim().max(1000).nullable(),
 });
 export type RatingInput = z.infer<typeof ratingInputSchema>;
+
+/** Keys we hand out in createUpload: <folder>/<userId>/<uuid>.<ext> – nothing else is accepted. */
+export function isOwnUploadKey(key: string, folder: "entries" | "avatars", userId: string): boolean {
+  const prefix = `${folder}/${userId}/`;
+  return key.startsWith(prefix) && /^[0-9a-f-]{36}\.(jpg|png|webp)$/.test(key.slice(prefix.length));
+}

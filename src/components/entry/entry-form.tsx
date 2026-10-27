@@ -13,7 +13,7 @@ import { MiniMap } from "@/components/map/mini-map";
 import { GEO_ERROR_TEXT, useGeolocation } from "@/hooks/use-geolocation";
 import { currencySymbol, firstName, formatDistance, formatPrice, parsePrice, priceInputValue } from "@/lib/format";
 import { normalizePlaceName } from "@/lib/geo";
-import { uploadImage } from "@/lib/upload-client";
+import { UploadError, uploadImage } from "@/lib/upload-client";
 import { CURRENCIES, MEAT_LABEL, MEATS, type EntryInput } from "@/lib/validation";
 import { saveEntryAction, suggestPlacesAction } from "@/server/actions/entries";
 import type { PlaceSuggestion } from "@/server/queries/places";
@@ -200,8 +200,8 @@ export function EntryForm({ types, prefill, autoGps, defaultCurrency, lastPrice,
     try {
       const key = await uploadImage(file, "entry");
       update({ photoKey: key, photoUrl: URL.createObjectURL(file) });
-    } catch {
-      setErrors(["Foto konnte nicht hochgeladen werden."]);
+    } catch (err) {
+      setErrors([err instanceof UploadError ? err.message : "Foto konnte nicht hochgeladen werden."]);
     } finally {
       setUploading(false);
     }

@@ -2,7 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { entry, entryCompanion } from "@/db/schema";
 import { monthRange } from "@/lib/time";
-import type { EntryInput, RatingInput } from "@/lib/validation";
+import { isOwnUploadKey, type EntryInput, type RatingInput } from "@/lib/validation";
 import { evaluateBadges } from "@/server/badges";
 import { isFriend, listFriends } from "./friends";
 import { findOrCreatePlace } from "./places";
@@ -13,7 +13,7 @@ export class EntryError extends Error {}
 
 async function validateInput(userId: string, input: EntryInput) {
   if (!(await typeUsableBy(userId, input.typeId))) throw new EntryError("Unbekannte Sorte.");
-  if (input.photoKey && !input.photoKey.startsWith(`entries/${userId}/`)) throw new EntryError("Ungültiges Foto.");
+  if (input.photoKey && !isOwnUploadKey(input.photoKey, "entries", userId)) throw new EntryError("Ungültiges Foto.");
   const friendIds = new Set((await listFriends(userId)).map((f) => f.id));
   const companions = [...new Set(input.companionIds)].filter((id) => id !== userId);
   if (companions.some((id) => !friendIds.has(id))) throw new EntryError("Du kannst nur Freunde markieren.");
@@ -46,9 +46,33 @@ function placeInput(input: EntryInput) {
   };
 }
 
-export async function createEntry(userId: string, input: EntryInput) {
+export const ENTRY_LIMITS = { perMinute: 3, perDay: 30 };
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * DB-backed limit for new entries (survives restarts): 3 per minute, 30 per day.
+ * Run inside the insert transaction; the advisory lock serialises parallel requests of one user.
+ */
+export async function assertEntryRate(tx: Tx, userId: string, now = new Date()) {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${"entry-rate:" + userId}))`);
+  const [row] = await tx.execute<Record<string, unknown>>(sql`
+    select
+      count(*) filter (where created_at > ${now.toISOString()}::timestamptz - interval '1 minute')::int as minute,
+      count(*) filter (where created_at > ${now.toISOString()}::timestamptz - interval '1 day')::int as day
+    from entry where user_id = ${userId} and created_at > ${now.toISOString()}::timestamptz - interval '1 day'`);
+  if ((num(row?.minute) ?? 0) >= ENTRY_LIMITS.perMinute) {
+    throw new EntryError(`Langsam! Höchstens ${ENTRY_LIMITS.perMinute} Döner pro Minute.`);
+  }
+  if ((num(row?.day) ?? 0) >= ENTRY_LIMITS.perDay) {
+    throw new EntryError(`Heute sind schon ${ENTRY_LIMITS.perDay} Döner eingetragen – mehr geht erst morgen wieder.`);
+  }
+}
+
+export async function createEntry(userId: string, input: EntryInput, { enforceRateLimit = false } = {}) {
   const companions = await validateInput(userId, input);
   const id = await db.transaction(async (tx) => {
+    if (enforceRateLimit) await assertEntryRate(tx, userId);
     const placeId = await findOrCreatePlace(tx, userId, placeInput(input));
     const [row] = await tx
       .insert(entry)

@@ -15,17 +15,21 @@ const LABEL: Record<Relation, string> = {
 
 export function RelationButton({ userId, relation: initial }: { userId: string; relation: Relation }) {
   const [relation, setRelation] = useState(initial);
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const muted = relation === "outgoing" || relation === "friends" || relation === "self";
 
   function onClick() {
     if (relation === "friends" || relation === "self") return;
     startTransition(async () => {
-      setRelation(relation === "outgoing" ? await cancelFriendship(userId) : await sendFriendRequest(userId));
+      const result = relation === "outgoing" ? await cancelFriendship(userId) : await sendFriendRequest(userId);
+      setRelation(result.relation);
+      setError(result.error ?? null);
     });
   }
 
   return (
+    <span className="flex shrink-0 flex-col items-end gap-1">
     <button
       type="button"
       onClick={onClick}
@@ -36,12 +40,27 @@ export function RelationButton({ userId, relation: initial }: { userId: string; 
     >
       {LABEL[relation]}
     </button>
+      {error ? (
+        <span role="alert" className="max-w-[160px] text-right text-[11px] font-medium text-accent">
+          {error}
+        </span>
+      ) : null}
+    </span>
   );
 }
 
 export function RequestButtons({ requestId, name }: { requestId: number; name: string }) {
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState<"accepted" | "declined" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  function answer(accept: boolean) {
+    startTransition(async () => {
+      const result = await answerFriendRequest(requestId, accept);
+      if (result.error) setError(result.error);
+      else setDone(accept ? "accepted" : "declined");
+    });
+  }
+  if (error) return <span role="alert" className="max-w-[140px] text-right text-[12px] font-medium text-accent">{error}</span>;
   if (done) return <span className="text-[13px] font-bold text-muted">{done === "accepted" ? "Angenommen" : "Abgelehnt"}</span>;
   return (
     <div className="flex gap-2">
@@ -49,7 +68,7 @@ export function RequestButtons({ requestId, name }: { requestId: number; name: s
         type="button"
         aria-label={`Anfrage von ${name} ablehnen`}
         disabled={pending}
-        onClick={() => startTransition(async () => { await answerFriendRequest(requestId, false); setDone("declined"); })}
+        onClick={() => answer(false)}
         className="icon-btn"
       >
         <X size={20} strokeWidth={2.4} aria-hidden="true" />
@@ -58,7 +77,7 @@ export function RequestButtons({ requestId, name }: { requestId: number; name: s
         type="button"
         aria-label={`Anfrage von ${name} annehmen`}
         disabled={pending}
-        onClick={() => startTransition(async () => { await answerFriendRequest(requestId, true); setDone("accepted"); })}
+        onClick={() => answer(true)}
         className="icon-btn bg-accent text-white hover:text-white"
       >
         <Check size={20} strokeWidth={2.6} aria-hidden="true" />

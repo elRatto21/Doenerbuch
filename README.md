@@ -58,6 +58,21 @@ See [`.env.example`](.env.example). Required in production: `DATABASE_URL`, `BET
    - The build doesn't need any secrets, so env vars don't have to be marked "available at build time" – except `NEXT_PUBLIC_MAP_STYLE_URL` if you change it (inlined into the client bundle).
    - Pending migrations run automatically on start (`RUN_MIGRATIONS=false` to opt out). Health check: `GET /api/health`.
 
+## Security
+
+- **Auth:** Better Auth with session cookies, secure in production. Login is limited to 5 attempts/min per IP, sign-up to 5/hour. Cross-origin requests are rejected (Better Auth + Next.js server action origin check).
+  - Set `TRUSTED_IP_HEADER` so the limiter sees the real client IP (`x-forwarded-for` behind Coolify, `cf-connecting-ip` behind Cloudflare). Otherwise all visitors share one bucket.
+  - `/api/auth/update-user` is disabled; the displayed name always mirrors the username.
+- **Access:** every page, server action and API route checks the session. Entries, places, photos and friend data are scoped to the owner, their friends or tagged companions; friends never get the exact GPS position.
+- **Rate limits (per user):** 3 new döner/min and 30/day (database-backed, safe under parallel requests). In memory, per app instance: uploads 20/min, friend requests 10/min, user search and invite lookups 30/min, geocoding 20/min, export 5/min, and more in `src/server/rate-limit.ts`.
+- **Uploads:** only keys the server issued (`entries|avatars/<user>/<uuid>.<jpg|png|webp>`); size and type are part of the signature; photos are re-encoded in the browser (EXIF/GPS removed).
+- **Headers:** no framing, `nosniff`, strict referrer, HSTS, camera/geolocation for this origin only.
+
+Not covered yet:
+- No email verification.
+- Uploads that never get saved with an entry stay in the bucket; an R2 lifecycle rule on `entries/` and `avatars/` can clean them up.
+- The in-memory limits count per instance, so with several instances use Redis or the database.
+
 ## Project layout
 
 ```

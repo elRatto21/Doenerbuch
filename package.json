@@ -64,7 +64,11 @@
       "esbuild",
       "sharp",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "zod": "^4.6.7",
+      "@esbuild-kit/core-utils>esbuild": "^0.25.12"
+    }
   },
   "engines": {
     "node": "24.x"

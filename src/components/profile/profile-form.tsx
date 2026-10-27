@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { FormField } from "@/components/auth/auth-shell";
 import { Avatar } from "@/components/avatar";
 import { SubmitButton } from "@/components/submit-button";
-import { uploadImage } from "@/lib/upload-client";
+import { UploadError, uploadImage } from "@/lib/upload-client";
 import { setAvatar, updateProfile } from "@/server/actions/profile";
 
 export function ProfileForm({ name, username, avatarUrl, photosEnabled }: { name: string; username: string; avatarUrl: string | null; photosEnabled: boolean }) {
@@ -20,10 +20,11 @@ export function ProfileForm({ name, username, avatarUrl, photosEnabled }: { name
     setAvatarError(null);
     try {
       const key = await uploadImage(file, "avatar");
-      await setAvatar(key);
+      const result = await setAvatar(key);
+      if (result.error) throw new UploadError(result.error);
       setPreview(URL.createObjectURL(file));
-    } catch {
-      setAvatarError("Foto konnte nicht hochgeladen werden.");
+    } catch (err) {
+      setAvatarError(err instanceof UploadError ? err.message : "Foto konnte nicht hochgeladen werden.");
     } finally {
       setUploading(false);
     }

@@ -41,6 +41,9 @@ export function parseNominatim(data: NominatimResponse): ReverseResult {
 
 class NominatimGeocoder implements Geocoder {
   private queue: Promise<unknown> = Promise.resolve();
+  private pending = 0;
+  /** Beyond this many waiting lookups we answer "unknown" right away instead of queueing (≈ 10 s). */
+  private static MAX_PENDING = 10;
   private last = 0;
   private cache = new Map<string, { at: number; value: ReverseResult | null }>();
 
@@ -55,6 +58,8 @@ class NominatimGeocoder implements Geocoder {
     const hit = this.cache.get(key);
     if (hit && Date.now() - hit.at < 24 * 3600_000) return hit.value;
 
+    if (this.pending >= NominatimGeocoder.MAX_PENDING) return null;
+    this.pending++;
     const run = this.queue.then(async () => {
       const wait = this.last + 1100 - Date.now();
       if (wait > 0) await new Promise((r) => setTimeout(r, wait));
@@ -73,6 +78,7 @@ class NominatimGeocoder implements Geocoder {
       return parseNominatim((await res.json()) as NominatimResponse);
     });
     this.queue = run.catch(() => undefined);
+    void run.finally(() => this.pending--).catch(() => undefined);
     const value = await run.catch(() => null);
     this.cache.set(key, { at: Date.now(), value });
     if (this.cache.size > 5000) this.cache.clear();

@@ -28,12 +28,17 @@ export async function isFriend(userId: string, otherId: string): Promise<boolean
   return Boolean(row);
 }
 
-export type IncomingRequest = FriendSummary & { requestId: number; entryCount: number; mutualCount: number };
+/** entryCount is null when the user doesn't share their activity (visibleToFriends off). */
+export type IncomingRequest = FriendSummary & { requestId: number; entryCount: number | null; mutualCount: number };
+
+const SHARED_ENTRY_COUNT = (alias: string) =>
+  sql.raw(`case when coalesce((${alias}.settings->>'visibleToFriends')::boolean, true)
+    then (select count(*)::int from entry e where e.user_id = ${alias}.id) end`);
 
 export async function incomingRequests(userId: string): Promise<IncomingRequest[]> {
   const rows = await db.execute<Record<string, unknown>>(sql`
     select f.id as "requestId", u.id, u.name, u.username, u.avatar_key as "avatarKey",
-      (select count(*)::int from entry e where e.user_id = u.id) as "entryCount",
+      ${SHARED_ENTRY_COUNT("u")} as "entryCount",
       (select count(*)::int from ${friendIdsSql(userId)} mine(id)
          where mine.id in (select case when f2.requester_id = u.id then f2.addressee_id else f2.requester_id end
                            from friendship f2 where f2.status = 'accepted' and (f2.requester_id = u.id or f2.addressee_id = u.id))) as "mutualCount"
@@ -46,7 +51,7 @@ export async function incomingRequests(userId: string): Promise<IncomingRequest[
     name: String(r.name),
     username: (r.username as string | null) ?? null,
     avatarKey: (r.avatarKey as string | null) ?? null,
-    entryCount: num(r.entryCount) ?? 0,
+    entryCount: num(r.entryCount),
     mutualCount: num(r.mutualCount) ?? 0,
   }));
 }
@@ -61,7 +66,7 @@ export async function pendingIncomingCount(userId: string): Promise<number> {
 
 export type Relation = "self" | "friends" | "outgoing" | "incoming" | "none";
 
-export type UserSearchResult = FriendSummary & { entryCount: number; relation: Relation };
+export type UserSearchResult = FriendSummary & { entryCount: number | null; relation: Relation };
 
 /** Search by friend code (exact) or username/name prefix. */
 export async function searchUsers(userId: string, query: string): Promise<UserSearchResult[]> {
@@ -71,7 +76,7 @@ export async function searchUsers(userId: string, query: string): Promise<UserSe
   const like = q.toLowerCase().replace(/[%_\\]/g, (c) => "\\" + c) + "%";
   const rows = await db.execute<Record<string, unknown>>(sql`
     select u.id, u.name, u.username, u.avatar_key as "avatarKey",
-      (select count(*)::int from entry e where e.user_id = u.id) as "entryCount",
+      ${SHARED_ENTRY_COUNT("u")} as "entryCount",
       (select case
           when f.status = 'accepted' then 'friends'
           when f.status = 'pending' and f.requester_id = ${userId} then 'outgoing'
@@ -91,7 +96,7 @@ export async function searchUsers(userId: string, query: string): Promise<UserSe
     name: String(r.name),
     username: (r.username as string | null) ?? null,
     avatarKey: (r.avatarKey as string | null) ?? null,
-    entryCount: num(r.entryCount) ?? 0,
+    entryCount: num(r.entryCount),
     relation: ((r.relation as Relation | null) ?? "none") as Relation,
   }));
 }

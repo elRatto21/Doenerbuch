@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { requireUser } from "@/lib/session";
 import { entryCount } from "@/server/queries/entries";
 import { findUserByFriendCode, relationTo } from "@/server/queries/friends";
+import { rateLimit, RateLimitError } from "@/server/rate-limit";
 import { photoUrl } from "@/server/storage";
 
 export const metadata: Metadata = { title: "Einladung" };
@@ -14,7 +15,15 @@ export const metadata: Metadata = { title: "Einladung" };
 export default async function InvitePage({ params }: { params: Promise<{ code: string }> }) {
   const me = await requireUser();
   const { code } = await params;
-  const other = await findUserByFriendCode(decodeURIComponent(code));
+  let limitError: string | null = null;
+  try {
+    // friend codes are short – limit lookups so they can't be brute-forced
+    rateLimit("userLookup", me.id);
+  } catch (err) {
+    if (!(err instanceof RateLimitError)) throw err;
+    limitError = err.message;
+  }
+  const other = limitError ? null : await findUserByFriendCode(decodeURIComponent(code).slice(0, 20));
   if (other?.id === me.id) redirect("/freunde/hinzufuegen");
 
   return (
@@ -23,8 +32,8 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
       <div className="px-5 pt-3">
         {!other ? (
           <section className="card flex flex-col gap-3 p-4">
-            <h2 className="display m-0 text-xl font-extrabold">Code nicht gefunden</h2>
-            <p className="m-0 text-[15px] text-muted">Prüf den Code nochmal – er sieht aus wie DÖN-4K7Q.</p>
+            <h2 className="display m-0 text-xl font-extrabold">{limitError ? "Kurz warten" : "Code nicht gefunden"}</h2>
+            <p className="m-0 text-[15px] text-muted">{limitError ?? "Prüf den Code nochmal – er sieht aus wie DÖN-4K7Q."}</p>
             <Link href="/freunde/hinzufuegen" className="btn btn-primary h-12 text-base">
               Code eingeben
             </Link>
@@ -35,7 +44,7 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
             <div>
               <h2 className="display m-0 text-2xl font-extrabold">{other.username}</h2>
               <p className="m-0 mt-1 text-sm text-muted">
-                {await entryCount(other.id)} Döner
+                {other.settings.visibleToFriends !== false ? `${await entryCount(other.id)} Döner` : "Dönerbuch-Nutzer"}
               </p>
             </div>
             <p className="m-0 text-[15px] text-muted">möchte mit dir im Dönerbuch vergleichen.</p>

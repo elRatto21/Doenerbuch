@@ -9,6 +9,7 @@ import { appUrl } from "@/lib/app-url";
 import { requireUser } from "@/lib/session";
 import { friendCodeSuffix } from "@/server/friend-code";
 import { incomingRequests, searchUsers } from "@/server/queries/friends";
+import { rateLimit, RateLimitError } from "@/server/rate-limit";
 import { photoUrl } from "@/server/storage";
 
 export const metadata: Metadata = { title: "Freund hinzufügen" };
@@ -18,9 +19,18 @@ export default async function AddFriendPage({ searchParams }: { searchParams: Pr
   const q = ((await searchParams).q ?? "").slice(0, 60);
   const code = me.friendCode ?? "";
   const link = `${await appUrl()}/freunde/einladung/${encodeURIComponent(friendCodeSuffix(code))}`;
+  let searchError: string | null = null;
+  if (q) {
+    try {
+      rateLimit("userLookup", me.id);
+    } catch (err) {
+      if (!(err instanceof RateLimitError)) throw err;
+      searchError = err.message;
+    }
+  }
   const [qrSvg, results, requests] = await Promise.all([
     QRCode.toString(link, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#1B1A17", light: "#FFFFFF" } }),
-    q ? searchUsers(me.id, q) : Promise.resolve([]),
+    q && !searchError ? searchUsers(me.id, q) : Promise.resolve([]),
     incomingRequests(me.id),
   ]);
   const avatarUrls = new Map(
@@ -61,7 +71,11 @@ export default async function AddFriendPage({ searchParams }: { searchParams: Pr
           </div>
         </form>
 
-        {q ? (
+        {searchError ? (
+          <p role="alert" className="m-0 text-[15px] font-medium text-accent">
+            {searchError}
+          </p>
+        ) : q ? (
           results.length === 0 ? (
             <p className="m-0 text-[15px] text-muted">Niemanden gefunden für „{q}“.</p>
           ) : (
@@ -72,7 +86,7 @@ export default async function AddFriendPage({ searchParams }: { searchParams: Pr
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-[15px] font-bold">{r.username}</span>
                     <span className="truncate text-xs text-muted">
-                      {r.relation === "friends" ? "bereits befreundet" : `${r.entryCount} Döner`}
+                      {r.relation === "friends" ? "bereits befreundet" : r.entryCount != null ? `${r.entryCount} Döner` : "neu im Dönerbuch"}
                     </span>
                   </span>
                   <RelationButton userId={r.id} relation={r.relation} />
@@ -95,7 +109,7 @@ export default async function AddFriendPage({ searchParams }: { searchParams: Pr
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-[15px] font-bold">{r.name}</span>
                   <span className="truncate text-xs text-muted">
-                    {r.entryCount} Döner
+                    {r.entryCount != null ? `${r.entryCount} Döner` : "Dönerbuch-Nutzer"}
                     {r.mutualCount > 0 ? ` · ${r.mutualCount} gemeinsame${r.mutualCount === 1 ? "r Freund" : " Freunde"}` : ""}
                   </span>
                 </span>
