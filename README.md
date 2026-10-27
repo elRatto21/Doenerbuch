@@ -4,11 +4,11 @@ Mobile-first PWA for tracking your Döner: type, place (GPS), price, then a rati
 
 Design reference and the original handoff: [`docs/HANDOFF.md`](docs/HANDOFF.md), [`docs/design/`](docs/design).
 
-**Stack:** Next.js 16 (App Router, Turbopack, Server Actions, TS strict) · React 19 · Tailwind CSS v4 · PostgreSQL + Drizzle ORM · Better Auth (email/password + optional Google) · MapLibre GL + OpenFreeMap · Nominatim reverse geocoding · S3/MinIO photo uploads · Serwist service worker (`@serwist/turbopack`) · zod · date-fns.
+**Stack:** Next.js 16 (App Router, Turbopack, Server Actions, TS strict) · React 19 · Tailwind CSS v4 · PostgreSQL + Drizzle ORM · Better Auth (email/password + optional Google) · MapLibre GL + OpenFreeMap · Nominatim reverse geocoding · S3-compatible photo uploads (Cloudflare R2, MinIO, AWS) · Serwist service worker (`@serwist/turbopack`) · zod · date-fns.
 
 ## Quick start (local)
 
-Requirements: Node 24, pnpm 10 (`corepack enable`), a PostgreSQL database and, for photos, an S3-compatible bucket (MinIO).
+Requirements: Node 24, pnpm 10 (`corepack enable`), a PostgreSQL database and, for photos, an S3-compatible bucket (R2, MinIO, …).
 
 ```bash
 cp .env.example .env          # DATABASE_URL, BETTER_AUTH_SECRET (openssl rand -base64 32), S3_*
@@ -49,7 +49,10 @@ See [`.env.example`](.env.example). Required in production: `DATABASE_URL`, `BET
 ## Deploy on Coolify (Nixpacks)
 
 1. **Postgres:** create a PostgreSQL resource and use its internal URL as `DATABASE_URL`.
-2. **MinIO:** create a private bucket (e.g. `doenerbuch`) and an access key with read/write on it. Browsers upload directly with a presigned POST, so the S3 API must be publicly reachable: set `S3_PUBLIC_ENDPOINT` to its public HTTPS URL (`S3_ENDPOINT` may be the internal one) and allow your app origin via CORS (MinIO's default `MINIO_API_CORS_ALLOW_ORIGIN=*` works).
+2. **Storage (R2 / MinIO / S3):** create a bucket (e.g. `doenerbuch`) and an API token / access key with read & write on it. Browsers upload directly with a presigned PUT, so:
+   - `S3_ENDPOINT` = the S3 API endpoint, for R2 `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` (with `S3_REGION=auto`). Leave `S3_PUBLIC_ENDPOINT` empty unless the browser needs a different hostname than the server.
+   - Photos are shown via signed URLs, so the bucket can stay private. Optionally set `S3_PUBLIC_URL` (e.g. the R2 `https://pub-….r2.dev` URL or a custom domain) to serve photos from the public URL instead.
+   - Add a CORS rule on the bucket allowing your app origin with methods `PUT` and `GET` and header `content-type` (R2: bucket → Settings → CORS policy).
 3. **App:** add the repository with build pack **Nixpacks**, the branch you deploy (currently `feat/mvp` – the repo has no `main` yet), base directory `/`, port **3000**. Set the env vars from `.env.example`.
    - Nixpacks picks Node 24 from `engines` and pnpm 10 via corepack; `nixpacks.toml` installs a current corepack (Nixpacks' bundled one can't fetch pnpm 10) and starts with `pnpm start`.
    - The build doesn't need any secrets, so env vars don't have to be marked "available at build time" – except `NEXT_PUBLIC_MAP_STYLE_URL` if you change it (inlined into the client bundle).
