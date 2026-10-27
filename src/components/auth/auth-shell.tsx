@@ -1,19 +1,35 @@
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { LogoMark } from "@/components/logo";
 
-export function AuthShell({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+/** Auth pages sit directly on the background – no card. */
+export function AuthShell({
+  title,
+  subtitle,
+  backHref,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  backHref?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <main className="flex min-h-dvh flex-col px-5 pb-10 pt-8">
-      <div className="flex items-center gap-2.5">
-        <LogoMark />
-        <span className="display text-[26px] font-extrabold tracking-[-0.5px]">Dönerbuch</span>
+    <main className="flex min-h-dvh flex-col px-5 pb-10 pt-4">
+      <div className="flex h-11 items-center">
+        {backHref ? (
+          <Link href={backHref} aria-label="Zurück" className="icon-btn">
+            <ArrowLeft size={20} strokeWidth={2.4} aria-hidden="true" />
+          </Link>
+        ) : (
+          <LogoMark size={36} />
+        )}
       </div>
-      <section className="card mt-8 flex flex-col gap-4 rounded-[20px] p-5 shadow-hard-lg">
-        <div>
-          <h1 className="display m-0 text-[26px] font-extrabold leading-tight tracking-[-0.4px]">{title}</h1>
-          {subtitle ? <p className="mt-1.5 text-[15px] leading-snug text-muted">{subtitle}</p> : null}
-        </div>
-        {children}
-      </section>
+      <div className="mt-6">
+        <h1 className="display m-0 text-[32px] font-extrabold leading-[1.05] tracking-[-0.6px]">{title}</h1>
+        {subtitle ? <p className="m-0 mt-2 text-[15px] leading-snug text-muted">{subtitle}</p> : null}
+      </div>
+      <div className="mt-7 flex flex-col gap-4">{children}</div>
     </main>
   );
 }

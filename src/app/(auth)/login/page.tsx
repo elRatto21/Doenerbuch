@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { AuthStart } from "@/components/auth/auth-start";
 import { googleEnabled } from "@/lib/auth";
 import { safeNext } from "@/lib/safe-next";
 import { getSession } from "@/lib/session";
-import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = { title: "Anmelden" };
+export const metadata: Metadata = { title: "Willkommen" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
   if (await getSession()) redirect(safeNext(next));
-  return <LoginForm next={safeNext(next)} googleEnabled={googleEnabled} />;
+  return <AuthStart next={safeNext(next)} googleEnabled={googleEnabled} />;
 }

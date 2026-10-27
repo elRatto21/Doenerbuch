@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AuthShell, Divider, FormError, FormField, GoogleButton } from "@/components/auth/auth-shell";
+import { AuthShell, FormError, FormField } from "@/components/auth/auth-shell";
 import { authClient } from "@/lib/auth-client";
 import { USERNAME_PATTERN } from "@/lib/validation";
 
 type Errors = Partial<Record<"name" | "username" | "email" | "password", string>>;
 
-export function RegisterForm({ next, googleEnabled }: { next: string; googleEnabled: boolean }) {
+export function RegisterForm({ next }: { next: string }) {
   const router = useRouter();
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -54,19 +54,7 @@ export function RegisterForm({ next, googleEnabled }: { next: string; googleEnab
   }
 
   return (
-    <AuthShell title="Konto erstellen" subtitle="Ab jetzt zählt jeder Döner.">
-      {googleEnabled ? (
-        <>
-          <GoogleButton
-            disabled={pending}
-            onClick={() => {
-              setPending(true);
-              void authClient.signIn.social({ provider: "google", callbackURL: next, newUserCallbackURL: "/willkommen" });
-            }}
-          />
-          <Divider />
-        </>
-      ) : null}
+    <AuthShell title="Konto erstellen" subtitle="Ab jetzt zählt jeder Döner." backHref={next === "/" ? "/login" : `/login?next=${encodeURIComponent(next)}`}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5" noValidate>
         <FormField id="name" label="Name" autoComplete="name" error={errors.name} required />
         <FormField
@@ -89,7 +77,7 @@ export function RegisterForm({ next, googleEnabled }: { next: string; googleEnab
       </form>
       <p className="m-0 text-center text-sm text-muted">
         Schon dabei?{" "}
-        <Link href="/login" className="font-bold text-ink">
+        <Link href={next === "/" ? "/anmelden" : `/anmelden?next=${encodeURIComponent(next)}`} className="font-bold text-ink">
           Anmelden
         </Link>
       </p>

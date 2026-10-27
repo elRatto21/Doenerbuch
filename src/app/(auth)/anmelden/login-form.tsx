@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AuthShell, Divider, FormError, FormField, GoogleButton } from "@/components/auth/auth-shell";
+import { AuthShell, FormError, FormField } from "@/components/auth/auth-shell";
 import { authClient } from "@/lib/auth-client";
 
-export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled: boolean }) {
+export function LoginForm({ next }: { next: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -31,19 +31,7 @@ export function LoginForm({ next, googleEnabled }: { next: string; googleEnabled
   }
 
   return (
-    <AuthShell title="Willkommen zurück" subtitle="Melde dich an, um dein Dönerbuch zu öffnen.">
-      {googleEnabled ? (
-        <>
-          <GoogleButton
-            disabled={pending}
-            onClick={() => {
-              setPending(true);
-              void authClient.signIn.social({ provider: "google", callbackURL: next });
-            }}
-          />
-          <Divider />
-        </>
-      ) : null}
+    <AuthShell title="Willkommen zurück" subtitle="Melde dich an, um dein Dönerbuch zu öffnen." backHref={next === "/" ? "/login" : `/login?next=${encodeURIComponent(next)}`}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3.5" noValidate>
         <FormField id="login" label="E-Mail oder Username" autoComplete="username" autoCapitalize="none" required />
         <FormField id="password" label="Passwort" type="password" autoComplete="current-password" required />
