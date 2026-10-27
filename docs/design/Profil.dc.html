@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Dönerbuch – Profil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B1A17}a:hover{color:#C8321F}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F5F3EE; color: #1B1A17; font-family: 'DM Sans', system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; padding: 16px 16px 4px">
+    <a href="Main.dc.html" aria-label="Zurück" style="width: 44px; height: 44px; border-radius: 12px; border: 2px solid #1B1A17; background: #FFFFFF; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1A17" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></a>
+    <h1 style="margin: 0; text-align: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px">Profil</h1>
+    <span></span>
+  </header>
+
+  <div style="padding: 10px 20px 30px; display: flex; flex-direction: column; gap: 14px">
+
+    <section aria-label="Über dich" style="display: flex; align-items: center; gap: 14px">
+      <div style="width: 72px; height: 72px; border-radius: 36px; border: 2px solid #1B1A17; background: #F6B814; box-shadow: 3px 3px 0 #1B1A17; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0">NT</div>
+      <div style="flex: 1; min-width: 0">
+        <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; line-height: 1.1">Niklas</div>
+        <div style="font-size: 13px; color: #5E5A52">@niklas · dabei seit Jan 2026</div>
+      </div>
+      <button style="height: 40px; padding: 0 12px; border: 2px solid #1B1A17; border-radius: 10px; background: #FFFFFF; font-family: inherit; font-weight: 700; font-size: 13px; color: #1B1A17; cursor: pointer">Bearbeiten</button>
+    </section>
+
+    <section aria-labelledby="abz" style="background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 16px; box-shadow: 3px 3px 0 #1B1A17; padding: 12px 14px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 id="abz" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 16px">Abzeichen</h2>
+        <span style="font-size: 12px; color: #5E5A52">4 von 12</span>
+      </div>
+      <ul style="list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{badges}}" as="b" hint-placeholder-count="4">
+          <li style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
+            <span style="{{b.style}}">{{b.mark}}</span>
+            <span style="font-size: 11px; line-height: 1.2; color: {{b.textColor}}">{{b.label}}</span>
+          </li>
+        </sc-for>
+      </ul>
+    </section>
+
+    <section aria-labelledby="einst" style="display: flex; flex-direction: column; gap: 8px">
+      <h2 id="einst" style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 16px">Einstellungen</h2>
+      <ul style="list-style: none; margin: 0; padding: 0; background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 14px; overflow: hidden">
+        <sc-for list="{{switches}}" as="s" hint-placeholder-count="3">
+          <li style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1.5px solid #E6E2D6">
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+              <span style="font-weight: 500; font-size: 15px">{{s.label}}</span>
+              <span style="font-size: 12px; color: #5E5A52">{{s.hint}}</span>
+            </span>
+            <button role="switch" aria-checked="{{s.on}}" aria-label="{{s.label}}" onClick="{{s.toggle}}" style="{{s.track}}"><span style="{{s.knob}}"></span></button>
+          </li>
+        </sc-for>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+          <li style="border-bottom: 1.5px solid #E6E2D6">
+            <button style="width: 100%; min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border: 0; background: transparent; font-family: inherit; color: #1B1A17; cursor: pointer; text-align: left">
+              <span style="flex: 1; font-weight: 500; font-size: 15px">{{r.label}}</span>
+              <span style="font-size: 14px; color: #5E5A52">{{r.value}}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B1A17" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+          </li>
+        </sc-for>
+      </ul>
+    </section>
+
+    <button style="height: 48px; border: 2px solid #1B1A17; border-radius: 12px; background: transparent; font-family: inherit; font-weight: 700; font-size: 15px; color: #A3291A; cursor: pointer">Abmelden</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C8321F","options":["#C8321F","#1F6FC8","#2E7D4F"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#C8321F';
+    const st = (this.state && this.state.sw) || { gps: true, feed: true, push: false };
+    const sw = [
+      { id: 'gps', label: 'Standort automatisch erfassen', hint: 'Beim neuen Eintrag per GPS' },
+      { id: 'feed', label: 'Für Freunde sichtbar', hint: 'Einträge erscheinen im Freunde-Feed' },
+      { id: 'push', label: 'Benachrichtigungen', hint: 'Wenn dich jemand markiert' }
+    ];
+    const badges = [
+      { mark: '1', label: 'Erster Döner', got: true },
+      { mark: '10', label: '10 Dürüm', got: true },
+      { mark: '★', label: 'Stammgast', got: true },
+      { mark: '5', label: '5 Städte', got: false }
+    ];
+    return {
+      accent,
+      badges: badges.map((b) => ({
+        ...b, textColor: b.got ? '#1B1A17' : '#5E5A52',
+        style: 'width: 52px; height: 52px; border-radius: 14px; border: 2px ' + (b.got ? 'solid' : 'dashed') + ' #1B1A17; display: flex; align-items: center; justify-content: center; font-family: \'Bricolage Grotesque\', sans-serif; font-weight: 800; font-size: 18px; ' + (b.got ? 'background: #F6B814; color: #1B1A17' : 'background: #F5F3EE; color: #5E5A52')
+      })),
+      switches: sw.map((s) => {
+        const on = !!st[s.id];
+        return {
+          ...s, on: on ? 'true' : 'false',
+          track: 'width: 52px; height: 32px; flex-shrink: 0; border-radius: 16px; border: 2px solid #1B1A17; padding: 0; position: relative; cursor: pointer; background: ' + (on ? accent : '#E6E2D6'),
+          knob: 'position: absolute; top: 3px; left: ' + (on ? '23px' : '3px') + '; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; border: 2px solid #1B1A17; box-sizing: border-box',
+          toggle: () => { const n = { ...st }; n[s.id] = !on; this.setState({ sw: n }); }
+        };
+      }),
+      rows: [
+        { label: 'Währung', value: '€ Euro' },
+        { label: 'Eigene Sorten', value: '7' },
+        { label: 'Daten exportieren', value: 'CSV' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
