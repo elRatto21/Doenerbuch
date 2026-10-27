@@ -9,7 +9,7 @@ import { requireUser } from "@/lib/session";
 import { fmt } from "@/lib/time";
 import { journalSummary, listJournal, type JournalEntry } from "@/server/queries/entries";
 import { listTypes } from "@/server/queries/types";
-import { photoUrl } from "@/server/storage";
+import { photoUrl, thumbKey } from "@/server/storage";
 
 const PAGE = 30;
 
@@ -43,6 +43,16 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
   }
 
   const groups = groupByMonth(entries);
+  const photos = new Map(
+    await Promise.all(
+      entries
+        .filter((e) => e.photoKey)
+        .map(async (e) => {
+          const [thumb, full] = await Promise.all([photoUrl(thumbKey(e.photoKey!)), photoUrl(e.photoKey)]);
+          return [e.id, thumb && full ? { thumb, full } : null] as const;
+        }),
+    ),
+  );
   const filtered = Boolean(filters.typeId || filters.minRating || filters.q);
   const moreParams = new URLSearchParams(Object.entries({ ...(await searchParams), seiten: String(pages + 1) }));
 
@@ -80,7 +90,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
             </div>
             <ul className="m-0 flex list-none flex-col gap-3 px-5 py-0">
               {group.entries.map((e) => (
-                <EntryCard key={e.id} entry={e} />
+                <EntryCard key={e.id} entry={e} photo={photos.get(e.id) ?? null} />
               ))}
             </ul>
           </section>

@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/session";
 import { entryInputSchema, type EntryInput } from "@/lib/validation";
 import { createEntry, deleteEntry, EntryError, updateEntry } from "@/server/queries/entries";
 import { PlaceError, suggestPlaces, type PlaceSuggestion } from "@/server/queries/places";
-import { deleteObject } from "@/server/storage";
+import { deletePhoto } from "@/server/storage";
 
 const suggestSchema = z.object({
   lat: z.number().nullable(),
@@ -30,7 +30,7 @@ export async function saveEntryAction(input: EntryInput, editId: number | null):
   try {
     if (editId) {
       const result = await updateEntry(me.id, editId, parsed.data);
-      if (result.oldPhotoKey) await deleteObject(result.oldPhotoKey).catch(() => undefined);
+      if (result.oldPhotoKey) await deletePhoto(result.oldPhotoKey).catch(() => undefined);
       revalidatePath("/", "layout");
       return { ok: true, id: result.id, badges: result.newBadges };
     }
@@ -47,7 +47,7 @@ export async function saveEntryAction(input: EntryInput, editId: number | null):
 export async function deleteEntryAction(entryId: number) {
   const me = await requireUser();
   const removed = await deleteEntry(me.id, z.number().int().parse(entryId));
-  if (removed?.photoKey) await deleteObject(removed.photoKey).catch(() => undefined);
+  if (removed?.photoKey) await deletePhoto(removed.photoKey).catch(() => undefined);
   revalidatePath("/", "layout");
   redirect("/");
 }

@@ -118,13 +118,14 @@ export type JournalEntry = {
   priceCents: number | null;
   currency: string;
   companions: string[];
+  photoKey: string | null;
 };
 
 export async function listJournal(userId: string, filters: JournalFilters = {}, limit = 50): Promise<{ entries: JournalEntry[]; hasMore: boolean }> {
   const q = filters.q?.trim();
   const rows = await db.execute<Record<string, unknown>>(sql`
     select e.id, e.eaten_at as "eatenAt", p.name as "placeName", p.address as "placeAddress", t.name as "typeName",
-      e.meat, e.overall, e.price_cents as "priceCents", e.currency,
+      e.meat, e.overall, e.price_cents as "priceCents", e.currency, e.photo_key as "photoKey",
       coalesce((select array_agg(u.name order by u.name) from entry_companion c join "user" u on u.id = c.friend_user_id where c.entry_id = e.id), '{}') as companions
     from entry e
     join place p on p.id = e.place_id
@@ -146,6 +147,7 @@ export async function listJournal(userId: string, filters: JournalFilters = {}, 
     priceCents: num(r.priceCents),
     currency: String(r.currency).trim(),
     companions: (r.companions as string[]) ?? [],
+    photoKey: (r.photoKey as string | null) ?? null,
   }));
   return { entries, hasMore: rows.length > limit };
 }

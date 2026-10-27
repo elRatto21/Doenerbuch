@@ -79,6 +79,16 @@ export async function photoUrl(key: string | null | undefined): Promise<string |
   return url;
 }
 
+/** Entry photos get a small JPEG thumbnail next to them: entries/u/abc.jpg → entries/u/abc.thumb.jpg */
+export function thumbKey(key: string): string {
+  return key.replace(/\.[a-z0-9]+$/i, "") + ".thumb.jpg";
+}
+
+/** Deletes an entry photo and its thumbnail. */
+export async function deletePhoto(key: string) {
+  await Promise.all([deleteObject(key), deleteObject(thumbKey(key))]);
+}
+
 export async function deleteObject(key: string) {
   if (!storageEnabled) return;
   urlCache.delete(key);
