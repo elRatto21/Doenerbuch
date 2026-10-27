@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowRight, Calendar, Clock, Crosshair, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, Calendar, ChevronDown, Clock, Crosshair, Loader2, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/page-header";
@@ -239,12 +239,28 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
 
         <fieldset className="m-0 border-0 p-0">
           <legend className="display mb-2 p-0 text-base font-bold">Was?</legend>
-          <div className="flex flex-wrap gap-2">
-            {types.map((t) => (
-              <button key={t.id} type="button" className="pill" aria-pressed={draft.typeId === t.id} onClick={() => update({ typeId: t.id })}>
-                {t.name}
-              </button>
-            ))}
+          <div className="relative">
+            <label htmlFor="sorte" className="sr-only">
+              Sorte
+            </label>
+            <select
+              id="sorte"
+              value={draft.typeId ?? ""}
+              onChange={(e) => update({ typeId: e.target.value ? Number(e.target.value) : null })}
+              className="field cursor-pointer appearance-none pr-11 text-base"
+            >
+              {draft.typeId == null ? (
+                <option value="" disabled>
+                  Sorte wählen
+                </option>
+              ) : null}
+              {types.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={20} strokeWidth={2.4} aria-hidden="true" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2" />
           </div>
           <div role="radiogroup" aria-label="Fleisch" className="mt-2.5 grid grid-cols-4 overflow-hidden rounded-xl border-2 border-ink bg-surface">
             {MEATS.map((m, i) => {

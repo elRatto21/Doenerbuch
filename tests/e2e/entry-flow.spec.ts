@@ -19,7 +19,7 @@ test("register, add a döner and see it in journal and stats", async ({ page }) 
 
   // step 1
   await expect(page.getByRole("heading", { name: "Neuer Döner" })).toBeVisible();
-  await page.getByRole("button", { name: "Dürüm", exact: true }).click();
+  await page.getByLabel("Sorte").selectOption({ label: "Dürüm" });
   await page.getByRole("radio", { name: "Hähnchen" }).click();
   await page.getByRole("combobox", { name: "Name des Imbiss" }).fill("Bosporus Grill");
   await expect(page.getByText("Standort erfasst")).toBeVisible();
