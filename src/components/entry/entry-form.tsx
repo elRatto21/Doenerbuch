@@ -2,12 +2,13 @@
 
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Calendar, Camera, Check, ChevronDown, Clock, Crosshair, Loader2, MapPin, Plus, X } from "lucide-react";
+import { Calendar, Camera, Check, ChevronDown, Clock, Crosshair, Expand, Loader2, MapPin, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { PageHeader } from "@/components/page-header";
+import { LocationPicker } from "@/components/map/location-picker";
 import { MiniMap } from "@/components/map/mini-map";
 import { GEO_ERROR_TEXT, useGeolocation } from "@/hooks/use-geolocation";
 import { currencySymbol, firstName, formatDistance, formatPrice, parsePrice, priceInputValue } from "@/lib/format";
@@ -48,6 +49,8 @@ type Props = {
   lastPrice: { cents: number; currency: string } | null;
   friends: { id: string; name: string; avatarUrl: string | null }[];
   photosEnabled: boolean;
+  /** Start of the map picker when there's no position yet (last entry's place). */
+  fallbackCenter: { lat: number; lng: number } | null;
 };
 
 function buildDraft(prefill: Prefill, types: Props["types"], defaultCurrency: string): EntryDraft {
@@ -89,7 +92,7 @@ function dateLabel(date: string): string {
   return format(d, "EEE, dd.MM.yy", { locale: de });
 }
 
-export function EntryForm({ types, prefill, autoGps, defaultCurrency, lastPrice, friends, photosEnabled }: Props) {
+export function EntryForm({ types, prefill, autoGps, defaultCurrency, lastPrice, friends, photosEnabled, fallbackCenter }: Props) {
   const router = useRouter();
   const { draft, start, update } = useEntryDraft();
   const hydrated = useDraftHydrated();
@@ -100,6 +103,7 @@ export function EntryForm({ types, prefill, autoGps, defaultCurrency, lastPrice,
   const [resolving, setResolving] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const startedRef = useRef(false);
   // set once saved, so clearing the draft doesn't restart the form
   const savedRef = useRef(false);
@@ -338,7 +342,29 @@ export function EntryForm({ types, prefill, autoGps, defaultCurrency, lastPrice,
             onChoose={choose}
           />
           <div className="card overflow-hidden rounded-[14px]">
-            <MiniMap position={position} accuracyM={draft.accuracyM} onPick={pickOnMap} className="h-[120px]" />
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              aria-label={position ? "Ort auf der Karte ändern" : "Ort auf der Karte setzen"}
+              className="relative block h-[120px] w-full cursor-pointer border-0 bg-transparent p-0"
+            >
+              {position ? (
+                <>
+                  <MiniMap position={position} accuracyM={draft.accuracyM} attribution={false} className="pointer-events-none h-full" />
+                  <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg border-2 border-ink bg-surface px-2 py-1 text-xs font-bold shadow-hard-sm">
+                    <Expand size={14} strokeWidth={2.4} aria-hidden="true" />
+                    Ändern
+                  </span>
+                </>
+              ) : (
+                <span className="map-placeholder flex h-full w-full items-center justify-center">
+                  <span className="flex items-center gap-1.5 rounded-lg border-2 border-ink bg-surface px-3 py-1.5 text-sm font-bold shadow-hard-sm">
+                    <MapPin size={16} strokeWidth={2.4} className="text-accent" aria-hidden="true" />
+                    Auf der Karte setzen
+                  </span>
+                </span>
+              )}
+            </button>
             <div className="flex items-center justify-between gap-2 border-t-2 border-ink px-3 py-2.5">
               <LocationStatus draft={draft} geo={geo} resolving={resolving} />
               <button type="button" className="btn btn-mustard h-11 shrink-0 rounded-[10px] px-3 text-[13px]" onClick={() => void relocate()} disabled={geo.status === "locating"}>
@@ -449,6 +475,10 @@ export function EntryForm({ types, prefill, autoGps, defaultCurrency, lastPrice,
               </label>
             )}
           </section>
+        ) : null}
+
+        {pickerOpen ? (
+          <LocationPicker initial={position} fallbackCenter={fallbackCenter} onConfirm={pickOnMap} onClose={() => setPickerOpen(false)} />
         ) : null}
 
         {errors.length > 0 ? (

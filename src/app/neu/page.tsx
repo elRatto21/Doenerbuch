@@ -91,6 +91,7 @@ export default async function NewEntryPage({ searchParams }: { searchParams: Pro
       lastPrice={last?.priceCents != null ? { cents: last.priceCents, currency: last.currency.trim() } : null}
       friends={friendsWithAvatars}
       photosEnabled={storageEnabled}
+      fallbackCenter={last ? { lat: last.place.lat, lng: last.place.lng } : null}
     />
   );
 }
