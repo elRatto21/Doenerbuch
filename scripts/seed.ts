@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { entry, friendship, kebabType, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import type { EntryInput } from "@/lib/validation";
-import { createEntry } from "@/server/queries/entries";
+import { createEntry, rateEntry } from "@/server/queries/entries";
 import { syncReferenceData } from "@/server/reference-data";
 
 const PASSWORD = "doener123";
@@ -80,13 +80,13 @@ async function main() {
     p: PlaceKey,
     at: string,
     type: string,
-    overall: number,
+    overall: number | null,
     price: number | null,
     opts: { with?: Key[]; meat?: EntryInput["meat"]; note?: string; ratings?: number[] } = {},
   ) => {
     const place = PLACES[p];
     const r = opts.ratings ?? [];
-    await createEntry(ids[who], {
+    const { id } = await createEntry(ids[who], {
       eatenAt: new Date(at).toISOString(),
       typeId: typeId(type),
       meat: opts.meat ?? "kalb",
@@ -100,22 +100,27 @@ async function main() {
       accuracyM: 6 + Math.round(Math.random() * 10),
       priceCents: price,
       currency: "EUR",
-      overall,
-      rMeat: r[0] ?? null,
-      rBread: r[1] ?? null,
-      rSauce: r[2] ?? null,
-      rSalad: r[3] ?? null,
-      rPortion: r[4] ?? null,
-      rValue: r[5] ?? null,
-      note: opts.note ?? null,
       photoKey: null,
       companionIds: (opts.with ?? []).map((k) => ids[k]),
     });
+    if (overall != null) {
+      await rateEntry(ids[who], id, {
+        overall,
+        rMeat: r[0] ?? null,
+        rBread: r[1] ?? null,
+        rSauce: r[2] ?? null,
+        rSalad: r[3] ?? null,
+        rPortion: r[4] ?? null,
+        rValue: r[5] ?? null,
+        note: opts.note ?? null,
+      });
+    }
   };
 
   // Niklas – October 2026 (as in the Journal design)
   await add("niklas", "bosporus", "2026-10-27T10:40:00Z", "Dürüm", 5, 750, { with: ["lena"], note: "Extra scharf, Brot frisch vom Grill. Bester Dürüm in der Stadt.", ratings: [5, 4, 5, 4, 4, 5] });
   await add("niklas", "anatolia", "2026-10-24T17:30:00Z", "Döner", 4, 690);
+  await add("niklas", "efe", new Date(Date.now() - 20 * 60_000).toISOString(), "Döner", null, 650); // just eaten, still "offen"
   await add("niklas", "ece", "2026-10-19T11:15:00Z", "Döner-Box", 3, 800, { with: ["tim", "jonas"], meat: "haehnchen" });
   await add("niklas", "mangal", "2026-10-15T18:45:00Z", "Teller", 4, 1150, { with: ["lena"], meat: "hack" });
   await add("niklas", "bosporus", "2026-10-11T12:05:00Z", "Döner", 5, 750);

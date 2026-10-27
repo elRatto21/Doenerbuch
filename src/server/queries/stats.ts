@@ -55,7 +55,7 @@ export async function getStats(userId: string, period: StatsPeriod, now = new Da
         avg(e.price_cents)::float8 as avg_price,
         mode() within group (order by e.currency) as currency,
         (array_agg(e.id order by e.eaten_at desc))[1] as latest_id
-      from entry e where e.user_id = ${userId} ${inRange}
+      from entry e where e.user_id = ${userId} and e.overall is not null ${inRange}
       group by e.type_id, e.place_id
     ), ranked as (
       select *, row_number() over (partition by type_id order by avg desc, n desc, place_id) as rk from per_place

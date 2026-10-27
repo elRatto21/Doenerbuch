@@ -2,7 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { entry, entryCompanion } from "@/db/schema";
 import { monthRange } from "@/lib/time";
-import type { EntryInput } from "@/lib/validation";
+import type { EntryInput, RatingInput } from "@/lib/validation";
 import { evaluateBadges } from "@/server/badges";
 import { isFriend, listFriends } from "./friends";
 import { findOrCreatePlace } from "./places";
@@ -30,14 +30,6 @@ function entryValues(input: EntryInput) {
     lat: input.lat,
     lng: input.lng,
     accuracyM: input.accuracyM,
-    overall: input.overall,
-    rMeat: input.rMeat,
-    rBread: input.rBread,
-    rSauce: input.rSauce,
-    rSalad: input.rSalad,
-    rPortion: input.rPortion,
-    rValue: input.rValue,
-    note: input.note || null,
     photoKey: input.photoKey,
   };
 }
@@ -95,6 +87,18 @@ export async function updateEntry(userId: string, entryId: number, input: EntryI
   return { id: entryId, newBadges, oldPhotoKey: existing.photoKey !== input.photoKey ? existing.photoKey : null };
 }
 
+/** Rates (or re-rates) an own entry. */
+export async function rateEntry(userId: string, entryId: number, input: RatingInput) {
+  const [row] = await db
+    .update(entry)
+    .set({ ...input, note: input.note || null, ratedAt: new Date(), updatedAt: new Date() })
+    .where(and(eq(entry.id, entryId), eq(entry.userId, userId)))
+    .returning({ id: entry.id });
+  if (!row) throw new EntryError("Eintrag nicht gefunden.");
+  const newBadges = await evaluateBadges(userId);
+  return { id: row.id, newBadges };
+}
+
 export async function deleteEntry(userId: string, entryId: number) {
   const [row] = await db
     .delete(entry)
@@ -105,7 +109,7 @@ export async function deleteEntry(userId: string, entryId: number) {
 
 // --- reads ------------------------------------------------------------------
 
-export type JournalFilters = { typeId?: number | null; minRating?: number | null; q?: string | null };
+export type JournalFilters = { typeId?: number | null; minRating?: number | null; open?: boolean; q?: string | null };
 
 export type JournalEntry = {
   id: number;
@@ -114,7 +118,8 @@ export type JournalEntry = {
   placeAddress: string | null;
   typeName: string;
   meat: string;
-  overall: number;
+  /** null = offen */
+  overall: number | null;
   priceCents: number | null;
   currency: string;
   companions: string[];
@@ -133,6 +138,7 @@ export async function listJournal(userId: string, filters: JournalFilters = {}, 
     where e.user_id = ${userId}
       ${filters.typeId ? sql`and e.type_id = ${filters.typeId}` : sql``}
       ${filters.minRating ? sql`and e.overall >= ${filters.minRating}` : sql``}
+      ${filters.open ? sql`and e.overall is null` : sql``}
       ${q ? sql`and (p.name ilike ${"%" + q + "%"} or coalesce(p.address, '') ilike ${"%" + q + "%"} or coalesce(e.note, '') ilike ${"%" + q + "%"})` : sql``}
     order by e.eaten_at desc, e.id desc
     limit ${limit + 1}`);
@@ -143,7 +149,7 @@ export async function listJournal(userId: string, filters: JournalFilters = {}, 
     placeAddress: (r.placeAddress as string | null) ?? null,
     typeName: String(r.typeName),
     meat: String(r.meat),
-    overall: Number(r.overall),
+    overall: num(r.overall),
     priceCents: num(r.priceCents),
     currency: String(r.currency).trim(),
     companions: (r.companions as string[]) ?? [],
@@ -156,9 +162,10 @@ export async function journalSummary(userId: string, now = new Date()) {
   const [start, end] = monthRange(now);
   const [row] = await db.execute<Record<string, unknown>>(sql`
     select count(*)::int as total, avg(overall)::float8 as avg,
-      count(*) filter (where eaten_at >= ${ts(start)} and eaten_at < ${ts(end)})::int as "thisMonth"
+      count(*) filter (where eaten_at >= ${ts(start)} and eaten_at < ${ts(end)})::int as "thisMonth",
+      count(*) filter (where overall is null)::int as open
     from entry where user_id = ${userId}`);
-  return { total: num(row?.total) ?? 0, avgOverall: num(row?.avg), thisMonth: num(row?.thisMonth) ?? 0 };
+  return { total: num(row?.total) ?? 0, avgOverall: num(row?.avg), thisMonth: num(row?.thisMonth) ?? 0, open: num(row?.open) ?? 0 };
 }
 
 export async function entryCount(userId: string): Promise<number> {
@@ -218,7 +225,7 @@ export async function getOwnEntry(userId: string, entryId: number) {
   return (
     (await db.query.entry.findFirst({
       where: and(eq(entry.id, entryId), eq(entry.userId, userId)),
-      with: { place: true, companions: true },
+      with: { place: true, type: true, companions: true },
     })) ?? null
   );
 }

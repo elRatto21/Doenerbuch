@@ -95,7 +95,7 @@ export default async function FriendsPage({ searchParams }: { searchParams: Prom
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 text-[13px] text-muted">
                         <span className="chip">{f.typeName}</span>
-                        <span className="font-bold text-ink">{formatRating(f.overall)} ★</span>
+                        <span className="font-bold text-ink">{f.overall != null ? `${formatRating(f.overall)} ★` : "noch offen"}</span>
                         {f.priceCents != null ? <span>{formatPrice(f.priceCents, f.currency)}</span> : null}
                         <span>· {relativeTime(f.eatenAt)}</span>
                       </div>

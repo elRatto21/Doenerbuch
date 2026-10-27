@@ -34,6 +34,7 @@ export type RatingKey = (typeof RATING_CATEGORIES)[number]["key"];
 
 const rating = z.number().int().min(1).max(5);
 
+/** What is captured right when eating: no rating yet. */
 export const entryInputSchema = z.object({
   eatenAt: z.iso.datetime({ offset: true }),
   typeId: z.number().int().positive(),
@@ -48,6 +49,13 @@ export const entryInputSchema = z.object({
   accuracyM: z.number().int().min(0).max(100000).nullable(),
   priceCents: z.number().int().min(0).max(100000).nullable(),
   currency: currencySchema,
+  photoKey: z.string().max(200).nullable(),
+  companionIds: z.array(z.string().min(1)).max(20),
+});
+export type EntryInput = z.infer<typeof entryInputSchema>;
+
+/** The rating, given afterwards. */
+export const ratingInputSchema = z.object({
   overall: rating,
   rMeat: rating.nullable(),
   rBread: rating.nullable(),
@@ -56,7 +64,5 @@ export const entryInputSchema = z.object({
   rPortion: rating.nullable(),
   rValue: rating.nullable(),
   note: z.string().trim().max(1000).nullable(),
-  photoKey: z.string().max(200).nullable(),
-  companionIds: z.array(z.string().min(1)).max(20),
 });
-export type EntryInput = z.infer<typeof entryInputSchema>;
+export type RatingInput = z.infer<typeof ratingInputSchema>;

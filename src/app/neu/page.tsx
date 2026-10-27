@@ -5,10 +5,11 @@ import { db } from "@/db";
 import { place } from "@/db/schema";
 import { requireUser } from "@/lib/session";
 import { getOwnEntry, lastEntry } from "@/server/queries/entries";
+import { listFriends } from "@/server/queries/friends";
 import { placeVisibleTo } from "@/server/queries/places";
 import { listTypes } from "@/server/queries/types";
-import { photoUrl } from "@/server/storage";
-import { StepOne, type Prefill } from "@/components/entry/step-one";
+import { photoUrl, storageEnabled } from "@/server/storage";
+import { EntryForm, type Prefill } from "@/components/entry/entry-form";
 
 export const metadata: Metadata = { title: "Neuer Döner" };
 
@@ -17,7 +18,8 @@ type Search = { von?: string; bearbeiten?: string; ort?: string };
 export default async function NewEntryPage({ searchParams }: { searchParams: Promise<Search> }) {
   const me = await requireUser();
   const params = await searchParams;
-  const [types, last] = await Promise.all([listTypes(me.id), lastEntry(me.id)]);
+  const [types, last, friends] = await Promise.all([listTypes(me.id), lastEntry(me.id), listFriends(me.id)]);
+  const friendsWithAvatars = await Promise.all(friends.map(async (f) => ({ id: f.id, name: f.name, avatarUrl: await photoUrl(f.avatarKey) })));
 
   let prefill: Prefill = { key: "new" };
   const editId = Number(params.bearbeiten);
@@ -42,10 +44,7 @@ export default async function NewEntryPage({ searchParams }: { searchParams: Pro
       accuracyM: e.accuracyM,
       priceCents: e.priceCents,
       currency: e.currency.trim(),
-      overall: e.overall,
-      ratings: { rMeat: e.rMeat, rBread: e.rBread, rSauce: e.rSauce, rSalad: e.rSalad, rPortion: e.rPortion, rValue: e.rValue },
       companionIds: e.companions.map((c) => c.friendUserId),
-      note: e.note ?? "",
       photoKey: e.photoKey,
       photoUrl: await photoUrl(e.photoKey),
       placeLat: e.place.lat,
@@ -84,12 +83,14 @@ export default async function NewEntryPage({ searchParams }: { searchParams: Pro
   }
 
   return (
-    <StepOne
+    <EntryForm
       types={types.map((t) => ({ id: t.id, name: t.name }))}
       prefill={prefill}
       autoGps={me.settings.autoGps}
       defaultCurrency={me.settings.currency}
       lastPrice={last?.priceCents != null ? { cents: last.priceCents, currency: last.currency.trim() } : null}
+      friends={friendsWithAvatars}
+      photosEnabled={storageEnabled}
     />
   );
 }

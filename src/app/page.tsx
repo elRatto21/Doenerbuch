@@ -15,7 +15,7 @@ const PAGE = 30;
 
 const searchSchema = z.object({
   sorte: z.coerce.number().int().positive().optional().catch(undefined),
-  min: z.coerce.number().int().min(1).max(5).optional().catch(undefined),
+  bewertung: z.union([z.literal("offen"), z.coerce.number().int().min(1).max(5)]).optional().catch(undefined),
   q: z.string().max(100).optional().catch(undefined),
   seiten: z.coerce.number().int().min(1).max(50).optional().catch(undefined),
 });
@@ -24,7 +24,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
   const me = await requireUser();
   const params = searchSchema.parse(await searchParams);
   const pages = params.seiten ?? 1;
-  const filters = { typeId: params.sorte ?? null, minRating: params.min ?? null, q: params.q?.trim() || null };
+  const filters = { typeId: params.sorte ?? null, minRating: typeof params.bewertung === "number" ? params.bewertung : null, open: params.bewertung === "offen", q: params.q?.trim() || null };
 
   const [summary, { entries, hasMore }, types, avatarUrl] = await Promise.all([
     journalSummary(me.id),
@@ -53,7 +53,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
         }),
     ),
   );
-  const filtered = Boolean(filters.typeId || filters.minRating || filters.q);
+  const filtered = Boolean(filters.typeId || filters.minRating || filters.open || filters.q);
   const moreParams = new URLSearchParams(Object.entries({ ...(await searchParams), seiten: String(pages + 1) }));
 
   return (
@@ -66,11 +66,23 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
         <Tile value={String(summary.thisMonth)} label="diesen Monat" highlight />
       </section>
 
+      {summary.open > 0 && !filters.open ? (
+        <Link
+          href="/?bewertung=offen"
+          className="mx-5 mb-4 flex items-center justify-between gap-3 rounded-[14px] border-2 border-ink bg-accent-soft px-3.5 py-3 text-ink no-underline shadow-hard-sm hover:text-ink"
+        >
+          <span className="text-[15px] font-bold">
+            {summary.open === 1 ? "1 Döner wartet auf deine Bewertung" : `${summary.open} Döner warten auf deine Bewertung`}
+          </span>
+          <span className="shrink-0 text-sm font-bold text-accent">Bewerten →</span>
+        </Link>
+      ) : null}
+
       {groups.length === 0 ? (
         <>
           <div className="flex items-center justify-between px-5 pb-2.5 pt-1">
             <h2 className="display m-0 text-lg font-bold">Keine Treffer</h2>
-            <JournalFilter types={types} typeId={filters.typeId} minRating={filters.minRating} q={filters.q ?? ""} />
+            <JournalFilter types={types} typeId={filters.typeId} minRating={filters.minRating} open={filters.open} q={filters.q ?? ""} />
           </div>
           <p className="mx-5 my-0 text-[15px] text-muted">
             Für diesen Filter gibt es keine Einträge.{" "}
@@ -86,7 +98,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
               <h2 id={`m-${group.key}`} className="display m-0 text-lg font-bold">
                 {group.label}
               </h2>
-              {i === 0 ? <JournalFilter types={types} typeId={filters.typeId} minRating={filters.minRating} q={filters.q ?? ""} /> : null}
+              {i === 0 ? <JournalFilter types={types} typeId={filters.typeId} minRating={filters.minRating} open={filters.open} q={filters.q ?? ""} /> : null}
             </div>
             <ul className="m-0 flex list-none flex-col gap-3 px-5 py-0">
               {group.entries.map((e) => (

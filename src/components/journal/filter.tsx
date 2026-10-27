@@ -5,14 +5,16 @@ export function JournalFilter({
   types,
   typeId,
   minRating,
+  open,
   q,
 }: {
   types: { id: number; name: string }[];
   typeId: number | null;
   minRating: number | null;
+  open: boolean;
   q: string;
 }) {
-  const active = Boolean(typeId || minRating || q);
+  const active = Boolean(typeId || minRating || open || q);
   return (
     <details className="group relative">
       <summary
@@ -42,9 +44,10 @@ export function JournalFilter({
         <fieldset className="m-0 border-0 p-0">
           <legend className="mb-1.5 p-0 text-sm font-bold">Bewertung</legend>
           <div className="flex flex-wrap gap-1.5">
-            <RadioPill name="min" value="" label="Alle" checked={!minRating} />
+            <RadioPill name="bewertung" value="" label="Alle" checked={!minRating && !open} />
+            <RadioPill name="bewertung" value="offen" label="Offen" checked={open} />
             {[3, 4, 5].map((n) => (
-              <RadioPill key={n} name="min" value={String(n)} label={n === 5 ? "5 ★" : `ab ${n} ★`} checked={minRating === n} />
+              <RadioPill key={n} name="bewertung" value={String(n)} label={n === 5 ? "5 ★" : `ab ${n} ★`} checked={minRating === n} />
             ))}
           </div>
         </fieldset>

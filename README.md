@@ -74,7 +74,8 @@ tests/              unit + DB tests (Vitest), e2e (Playwright)
 | Route | Screen |
 |---|---|
 | `/` | Journal (empty state = Willkommen), filter via `?sorte=&min=&q=` |
-| `/neu`, `/neu/bewertung` | Entry flow, step 1/2 and 2/2; `?von=<id>` = "Nochmal hier", `?bearbeiten=<id>` = edit, `?ort=<placeId>` |
+| `/neu` | Log a döner right away (time, type, meat, place, price, friends, photo) – saved without rating; `?von=<id>` = "Nochmal hier", `?bearbeiten=<id>` = edit, `?ort=<placeId>` |
+| `/eintrag/[id]/bewerten` | Rate afterwards (stars, categories, note); unrated entries are "offen" |
 | `/eintrag/[id]` | Detail (owner, or friends/tagged companions without exact GPS) |
 | `/karte` | Map with pins, filters, search, own location; `?ort=<placeId>` |
 | `/statistik` | Month / year / all time |
@@ -83,6 +84,8 @@ tests/              unit + DB tests (Vitest), e2e (Playwright)
 | `/login`, `/registrieren`, `/willkommen` | Auth + username onboarding |
 
 ## Rules worth knowing
+
+- **Rate later:** entries are saved without a rating and stay *offen* until rated. Open entries count as eaten (count, spend, ranking) but are left out of averages and "Die Besten je Sorte".
 
 - **Places** are deduplicated: same normalized name within 50 m = same place. Suggestions show your and your friends' places within 150 m first, sorted by distance.
 - **Privacy:** entries are private unless "Für Freunde sichtbar" is on (default). Friends never see the exact GPS fix, only the place. Tagged friends always see entries they were tagged in.

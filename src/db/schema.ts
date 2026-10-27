@@ -162,7 +162,9 @@ export const entry = pgTable(
     lat: doublePrecision("lat"),
     lng: doublePrecision("lng"),
     accuracyM: integer("accuracy_m"),
-    overall: smallint("overall").notNull(),
+    /** null = noch nicht bewertet ("offen") */
+    overall: smallint("overall"),
+    ratedAt: timestamp("rated_at", { withTimezone: true }),
     rMeat: smallint("r_meat"),
     rBread: smallint("r_bread"),
     rSauce: smallint("r_sauce"),

@@ -42,7 +42,8 @@ export type FeedItem = {
   avatarKey: string | null;
   placeName: string;
   typeName: string;
-  overall: number;
+  /** null = noch nicht bewertet */
+  overall: number | null;
   priceCents: number | null;
   currency: string;
   eatenAt: Date;
@@ -77,7 +78,7 @@ export async function friendFeed(userId: string, { limit = 20, offset = 0 } = {}
     avatarKey: (r.avatar_key as string | null) ?? null,
     placeName: String(r.place_name),
     typeName: String(r.type_name),
-    overall: Number(r.overall),
+    overall: num(r.overall),
     priceCents: num(r.price_cents),
     currency: String(r.currency).trim(),
     eatenAt: new Date(r.eaten_at as string),
@@ -97,7 +98,8 @@ export type MapPlace = {
   myAvg: number | null;
   friendCount: number;
   friendAvg: number | null;
-  avg: number;
+  /** null when no entry here is rated yet */
+  avg: number | null;
   count: number;
   lastAt: Date;
   myLastEntryId: number | null;
@@ -129,7 +131,7 @@ export async function mapPlaces(userId: string): Promise<MapPlace[]> {
     myAvg: num(r.my_avg),
     friendCount: num(r.friend_count) ?? 0,
     friendAvg: num(r.friend_avg),
-    avg: num(r.avg) ?? 0,
+    avg: num(r.avg),
     count: num(r.n) ?? 0,
     lastAt: new Date(r.last_at as string),
     myLastEntryId: num(r.my_last_id),

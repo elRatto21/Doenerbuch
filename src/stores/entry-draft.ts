@@ -4,11 +4,6 @@ import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { Meat } from "@/db/schema";
-import type { RatingKey } from "@/lib/validation";
-
-export type DraftRatings = Record<RatingKey, number | null>;
-
-export const EMPTY_RATINGS: DraftRatings = { rMeat: null, rBread: null, rSauce: null, rSalad: null, rPortion: null, rValue: null };
 
 export type EntryDraft = {
   /** Identifies what the draft was started from: "new", "von:12", "edit:12", "ort:5". */
@@ -30,10 +25,7 @@ export type EntryDraft = {
   locationSource: "gps" | "manual" | "place" | "stored" | null;
   priceInput: string;
   currency: string;
-  overall: number | null;
-  ratings: DraftRatings;
   companionIds: string[];
-  note: string;
   photoKey: string | null;
   photoUrl: string | null;
 };
@@ -54,7 +46,7 @@ export const useEntryDraft = create<Store>()(
       clear: () => set({ draft: null }),
     }),
     {
-      name: "doenerbuch-entwurf",
+      name: "doenerbuch-entwurf-v2",
       storage: createJSONStorage(() => sessionStorage),
       partialize: (s) => ({ draft: s.draft }),
     },

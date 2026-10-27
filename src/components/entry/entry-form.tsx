@@ -2,19 +2,21 @@
 
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ArrowRight, Calendar, ChevronDown, Clock, Crosshair, Loader2, MapPin } from "lucide-react";
+import { Calendar, Camera, Check, ChevronDown, Clock, Crosshair, Loader2, MapPin, Plus, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Avatar } from "@/components/avatar";
 import { PageHeader } from "@/components/page-header";
 import { MiniMap } from "@/components/map/mini-map";
 import { GEO_ERROR_TEXT, useGeolocation } from "@/hooks/use-geolocation";
-import { currencySymbol, formatDistance, formatPrice, parsePrice, priceInputValue } from "@/lib/format";
+import { currencySymbol, firstName, formatDistance, formatPrice, parsePrice, priceInputValue } from "@/lib/format";
 import { normalizePlaceName } from "@/lib/geo";
-import { CURRENCIES, MEAT_LABEL, MEATS } from "@/lib/validation";
-import { suggestPlacesAction } from "@/server/actions/entries";
+import { uploadImage } from "@/lib/upload-client";
+import { CURRENCIES, MEAT_LABEL, MEATS, type EntryInput } from "@/lib/validation";
+import { saveEntryAction, suggestPlacesAction } from "@/server/actions/entries";
 import type { PlaceSuggestion } from "@/server/queries/places";
-import { DRAFT_MAX_AGE_MS, EMPTY_RATINGS, useDraftHydrated, useEntryDraft, type DraftRatings, type EntryDraft } from "@/stores/entry-draft";
-import { ProgressBar } from "./progress-bar";
+import { DRAFT_MAX_AGE_MS, useDraftHydrated, useEntryDraft, type EntryDraft } from "@/stores/entry-draft";
 
 export type Prefill = {
   key: string;
@@ -33,10 +35,7 @@ export type Prefill = {
   accuracyM?: number | null;
   priceCents?: number | null;
   currency?: string;
-  overall?: number;
-  ratings?: DraftRatings;
   companionIds?: string[];
-  note?: string;
   photoKey?: string | null;
   photoUrl?: string | null;
 };
@@ -47,6 +46,8 @@ type Props = {
   autoGps: boolean;
   defaultCurrency: string;
   lastPrice: { cents: number; currency: string } | null;
+  friends: { id: string; name: string; avatarUrl: string | null }[];
+  photosEnabled: boolean;
 };
 
 function buildDraft(prefill: Prefill, types: Props["types"], defaultCurrency: string): EntryDraft {
@@ -72,10 +73,7 @@ function buildDraft(prefill: Prefill, types: Props["types"], defaultCurrency: st
     locationSource: hasOwnFix ? "stored" : hasPlace ? "place" : null,
     priceInput: priceInputValue(prefill.priceCents),
     currency: prefill.currency ?? defaultCurrency,
-    overall: prefill.overall ?? null,
-    ratings: prefill.ratings ?? EMPTY_RATINGS,
     companionIds: prefill.companionIds ?? [],
-    note: prefill.note ?? "",
     photoKey: prefill.photoKey ?? null,
     photoUrl: prefill.photoUrl ?? null,
   };
@@ -91,7 +89,7 @@ function dateLabel(date: string): string {
   return format(d, "EEE, dd.MM.yy", { locale: de });
 }
 
-export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }: Props) {
+export function EntryForm({ types, prefill, autoGps, defaultCurrency, lastPrice, friends, photosEnabled }: Props) {
   const router = useRouter();
   const { draft, start, update } = useEntryDraft();
   const hydrated = useDraftHydrated();
@@ -100,13 +98,17 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
   const [selectedSuggestion, setSelectedSuggestion] = useState<PlaceSuggestion | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [resolving, setResolving] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const startedRef = useRef(false);
+  // set once saved, so clearing the draft doesn't restart the form
+  const savedRef = useRef(false);
   // last reverse-geocoding result, used when the user renames a chosen place
   const reverseRef = useRef<{ address: string | null; city: string | null; osmId: string | null } | null>(null);
 
   // (Re)start the draft when opening a different flow or when it is stale.
   useEffect(() => {
-    if (!hydrated || startedRef.current) return;
+    if (!hydrated || startedRef.current || savedRef.current) return;
     startedRef.current = true;
     const current = useEntryDraft.getState().draft;
     const stale = !current || current.key !== prefill.key || Date.now() - current.startedAt > DRAFT_MAX_AGE_MS;
@@ -181,7 +183,27 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
   const lastForPlace = selectedSuggestion?.lastPriceCents != null ? { cents: selectedSuggestion.lastPriceCents, currency: selectedSuggestion.lastCurrency ?? defaultCurrency } : null;
   const priceSuggestion = lastForPlace ?? lastPrice;
 
-  function next() {
+  function toggleFriend(id: string) {
+    if (!draft) return;
+    const has = draft.companionIds.includes(id);
+    update({ companionIds: has ? draft.companionIds.filter((x) => x !== id) : [...draft.companionIds, id] });
+  }
+
+  async function onPhoto(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setErrors([]);
+    try {
+      const key = await uploadImage(file, "entry");
+      update({ photoKey: key, photoUrl: URL.createObjectURL(file) });
+    } catch {
+      setErrors(["Foto konnte nicht hochgeladen werden."]);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function save() {
     if (!draft) return;
     const problems: string[] = [];
     if (!draft.typeId) problems.push("Wähl eine Sorte.");
@@ -189,7 +211,39 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
     if (!draft.placeId && (draft.lat == null || draft.lng == null)) problems.push("Standort fehlt – orten oder auf der Karte tippen.");
     if (draft.priceInput.trim() && parsePrice(draft.priceInput) == null) problems.push("Der Preis sieht komisch aus, z. B. 7,50.");
     setErrors(problems);
-    if (problems.length === 0) router.push("/neu/bewertung");
+    if (problems.length > 0) return;
+
+    const fromPlace = draft.locationSource === "place";
+    const input: EntryInput = {
+      eatenAt: new Date(`${draft.date}T${draft.time}`).toISOString(),
+      typeId: draft.typeId!,
+      meat: draft.meat,
+      placeId: draft.placeId,
+      placeName: draft.placeName.trim(),
+      placeAddress: draft.placeAddress,
+      placeCity: draft.placeCity,
+      placeOsmId: draft.placeOsmId,
+      // coordinates copied from a known place are not an own GPS fix – unless a new place needs them
+      lat: fromPlace && draft.placeId ? null : draft.lat,
+      lng: fromPlace && draft.placeId ? null : draft.lng,
+      accuracyM: draft.locationSource === "gps" || draft.locationSource === "stored" ? draft.accuracyM : null,
+      priceCents: parsePrice(draft.priceInput),
+      currency: draft.currency as EntryInput["currency"],
+      photoKey: draft.photoKey,
+      companionIds: draft.companionIds.filter((id) => friends.some((f) => f.id === id)),
+    };
+    setSaving(true);
+    const result = await saveEntryAction(input, draft.editId);
+    if (!result.ok) {
+      setSaving(false);
+      setErrors([result.error]);
+      return;
+    }
+    savedRef.current = true;
+    const params = new URLSearchParams({ gespeichert: draft.editId ? "bearbeitet" : "neu" });
+    if (result.badges.length > 0) params.set("abzeichen", result.badges.join(","));
+    router.replace(`/eintrag/${result.id}?${params}`);
+    useEntryDraft.getState().clear();
   }
 
   const position = useMemo(() => (draft?.lat != null && draft?.lng != null ? { lat: draft.lat, lng: draft.lng } : null), [draft?.lat, draft?.lng]);
@@ -214,15 +268,13 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
         title={draft.editId ? "Bearbeiten" : "Neuer Döner"}
         backHref={backHref}
         variant="close"
-        right={<span className="text-[13px] font-bold text-muted">1/2</span>}
       />
-      <ProgressBar value={0.5} />
 
       <form
-        className="pb-cta flex flex-col gap-[18px] px-5 pt-4"
+        className="flex flex-col gap-[18px] px-5 pt-4 pb-[calc(150px+env(safe-area-inset-bottom))]"
         onSubmit={(e) => {
           e.preventDefault();
-          next();
+          void save();
         }}
       >
         <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
@@ -344,6 +396,61 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
           </div>
         </div>
 
+        <section aria-labelledby="wer" className="flex flex-col gap-2">
+          <h2 id="wer" className="display m-0 text-base font-bold">
+            Mit wem?
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {friends.map((f) => {
+              const on = draft.companionIds.includes(f.id);
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleFriend(f.id)}
+                  className={`flex h-11 cursor-pointer items-center gap-1.5 rounded-full border-2 border-ink pl-1 pr-3 text-sm ${on ? "bg-mustard font-bold" : "bg-surface font-medium"}`}
+                >
+                  <Avatar name={f.name} imageUrl={f.avatarUrl} size={30} className={on ? "!bg-surface" : ""} />
+                  {firstName(f.name)}
+                </button>
+              );
+            })}
+            <Link href="/freunde/hinzufuegen" aria-label="Freund hinzufügen" className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-dashed border-ink text-ink">
+              <Plus size={18} strokeWidth={2.4} aria-hidden="true" />
+            </Link>
+          </div>
+          {friends.length === 0 ? <p className="m-0 text-[13px] text-muted">Noch keine Freunde – lade welche ein, um sie zu markieren.</p> : null}
+        </section>
+
+        {photosEnabled ? (
+          <section aria-labelledby="foto" className="flex flex-col gap-2">
+            <h2 id="foto" className="display m-0 text-base font-bold">
+              Foto
+            </h2>
+            {draft.photoUrl ? (
+              <div className="relative h-44 overflow-hidden rounded-[14px] border-2 border-ink">
+                {/* eslint-disable-next-line @next/next/no-img-element -- local preview / presigned URL */}
+                <img src={draft.photoUrl} alt="Foto vom Döner" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  aria-label="Foto entfernen"
+                  onClick={() => update({ photoKey: null, photoUrl: null })}
+                  className="icon-btn absolute right-2 top-2 h-10 w-10 rounded-full"
+                >
+                  <X size={18} strokeWidth={2.6} aria-hidden="true" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex h-24 cursor-pointer items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-ink bg-surface text-[15px] font-bold focus-within:outline-3 focus-within:outline-accent">
+                {uploading ? <Loader2 size={22} className="animate-spin" aria-hidden="true" /> : <Camera size={22} aria-hidden="true" />}
+                {uploading ? "Wird hochgeladen …" : "Foto aufnehmen"}
+                <input type="file" accept="image/*" capture="environment" className="sr-only" disabled={uploading} onChange={(e) => void onPhoto(e.target.files?.[0])} />
+              </label>
+            )}
+          </section>
+        ) : null}
+
         {errors.length > 0 ? (
           <ul role="alert" className="m-0 flex list-none flex-col gap-1 rounded-xl border-2 border-ink bg-accent-soft px-3 py-2 text-sm font-medium">
             {errors.map((e) => (
@@ -353,10 +460,11 @@ export function StepOne({ types, prefill, autoGps, defaultCurrency, lastPrice }:
         ) : null}
 
         <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[480px] -translate-x-1/2 border-t-2 border-ink bg-ground px-5 pt-3.5 safe-bottom md:border-x-2">
-          <button type="submit" className="btn btn-primary w-full">
-            Weiter zur Bewertung
-            <ArrowRight size={20} strokeWidth={2.4} aria-hidden="true" />
+          <button type="submit" className="btn btn-primary w-full" disabled={saving || uploading} aria-busy={saving}>
+            {saving ? <Loader2 size={20} className="animate-spin" aria-hidden="true" /> : <Check size={20} strokeWidth={2.6} aria-hidden="true" />}
+            {draft.editId ? "Änderungen speichern" : "Ins Dönerbuch eintragen"}
           </button>
+          {!draft.editId ? <p className="m-0 mt-2 text-center text-xs text-muted">Bewerten kannst du ihn, wenn du fertig gegessen hast.</p> : null}
         </div>
       </form>
     </main>

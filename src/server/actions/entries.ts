@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/lib/session";
-import { entryInputSchema, type EntryInput } from "@/lib/validation";
-import { createEntry, deleteEntry, EntryError, updateEntry } from "@/server/queries/entries";
+import { entryInputSchema, ratingInputSchema, type EntryInput, type RatingInput } from "@/lib/validation";
+import { createEntry, deleteEntry, EntryError, rateEntry, updateEntry } from "@/server/queries/entries";
 import { PlaceError, suggestPlaces, type PlaceSuggestion } from "@/server/queries/places";
 import { deletePhoto } from "@/server/storage";
 
@@ -40,6 +40,21 @@ export async function saveEntryAction(input: EntryInput, editId: number | null):
   } catch (err) {
     if (err instanceof EntryError || err instanceof PlaceError) return { ok: false, error: err.message };
     console.error("saveEntry failed", err);
+    return { ok: false, error: "Speichern fehlgeschlagen. Bitte nochmal versuchen." };
+  }
+}
+
+export async function rateEntryAction(entryId: number, input: RatingInput): Promise<SaveResult> {
+  const me = await requireUser();
+  const parsed = ratingInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Gib eine Gesamtbewertung von 1–5 Sternen." };
+  try {
+    const result = await rateEntry(me.id, z.number().int().positive().parse(entryId), parsed.data);
+    revalidatePath("/", "layout");
+    return { ok: true, id: result.id, badges: result.newBadges };
+  } catch (err) {
+    if (err instanceof EntryError) return { ok: false, error: err.message };
+    console.error("rateEntry failed", err);
     return { ok: false, error: "Speichern fehlgeschlagen. Bitte nochmal versuchen." };
   }
 }

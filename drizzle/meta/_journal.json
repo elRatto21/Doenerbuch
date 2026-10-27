@@ -15,6 +15,13 @@
       "when": 1793113946569,
       "tag": "0001_meat_options",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793118218693,
+      "tag": "0002_open_ratings",
+      "breakpoints": true
     }
   ]
 }

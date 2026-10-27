@@ -24,7 +24,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "top", label: "Ab 4 ★" },
 ];
 
-function scoreFor(p: Place, filter: Filter): number {
+function scoreFor(p: Place, filter: Filter): number | null {
   if (filter === "meine" && p.myAvg != null) return p.myAvg;
   if (filter === "freunde" && p.friendAvg != null) return p.friendAvg;
   return p.avg;
@@ -32,8 +32,9 @@ function scoreFor(p: Place, filter: Filter): number {
 
 function styleMarker(el: HTMLButtonElement, p: Place, filter: Filter, selected: boolean) {
   const friendOnly = p.myCount === 0;
-  el.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="${selected ? "#fff" : "var(--color-ink)"}" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span>${formatRating(scoreFor(p, filter))}</span>`;
-  el.setAttribute("aria-label", `${p.name}, ${formatRating(scoreFor(p, filter))} Sterne`);
+  el.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="${selected ? "#fff" : "var(--color-ink)"}" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span>${scoreFor(p, filter) == null ? "offen" : formatRating(scoreFor(p, filter))}</span>`;
+  const score = scoreFor(p, filter);
+  el.setAttribute("aria-label", score == null ? `${p.name}, noch nicht bewertet` : `${p.name}, ${formatRating(score)} Sterne`);
   el.setAttribute("aria-pressed", String(selected));
   el.style.cssText = [
     "height:34px;padding:0 10px;border:2px solid var(--color-ink);border-radius:17px;display:flex;align-items:center;gap:4px",
@@ -65,7 +66,7 @@ export function PlacesMap({ places, initialPlaceId }: { places: Place[]; initial
       places.filter((p) => {
         if (filter === "meine") return p.myCount > 0;
         if (filter === "freunde") return p.friendCount > 0;
-        if (filter === "top") return p.avg >= 4;
+        if (filter === "top") return p.avg != null && p.avg >= 4;
         return true;
       }),
     [places, filter],

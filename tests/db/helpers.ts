@@ -2,7 +2,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { friendship, kebabType, user, type Meat } from "@/db/schema";
 import type { EntryInput } from "@/lib/validation";
-import { createEntry } from "@/server/queries/entries";
+import { createEntry, rateEntry } from "@/server/queries/entries";
 import { syncReferenceData } from "@/server/reference-data";
 
 export async function resetData() {
@@ -43,7 +43,8 @@ export async function addEntry(
   opts: {
     place: string;
     type?: string;
-    overall: number;
+    /** null = offen (not rated) */
+    overall: number | null;
     price?: number | null;
     currency?: string;
     at: string;
@@ -68,16 +69,12 @@ export async function addEntry(
     accuracyM: 8,
     priceCents: opts.price === undefined ? 750 : opts.price,
     currency: (opts.currency ?? "EUR") as EntryInput["currency"],
-    overall: opts.overall,
-    rMeat: null,
-    rBread: null,
-    rSauce: null,
-    rSalad: null,
-    rPortion: null,
-    rValue: null,
-    note: null,
     photoKey: null,
     companionIds: opts.companions ?? [],
   };
-  return (await createEntry(userId, input)).id;
+  const { id } = await createEntry(userId, input);
+  if (opts.overall != null) {
+    await rateEntry(userId, id, { overall: opts.overall, rMeat: null, rBread: null, rSauce: null, rSalad: null, rPortion: null, rValue: null, note: null });
+  }
+  return id;
 }

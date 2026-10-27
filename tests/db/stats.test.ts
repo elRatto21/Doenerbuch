@@ -60,6 +60,6 @@ describe("statistics", () => {
     const me = await makeUser("Niklas");
     await addEntry(me, { place: "A", overall: 5, at: "2026-10-20T12:00:00Z" });
     await addEntry(me, { place: "B", overall: 3, at: "2026-08-20T12:00:00Z" });
-    expect(await journalSummary(me, NOW)).toEqual({ total: 2, avgOverall: 4, thisMonth: 1 });
+    expect(await journalSummary(me, NOW)).toEqual({ total: 2, avgOverall: 4, thisMonth: 1, open: 0 });
   });
 });

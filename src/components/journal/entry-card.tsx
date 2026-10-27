@@ -33,7 +33,13 @@ export function EntryCard({ entry, photo }: { entry: JournalEntry; photo: { thum
             </span>
           </div>
           <div className="mt-0.5 flex items-center justify-between">
-            <Stars value={entry.overall} />
+            {entry.overall != null ? (
+              <Stars value={entry.overall} />
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-md border-[1.5px] border-ink bg-accent-soft px-2 py-0.5 text-[11px] font-bold text-accent">
+                Offen · jetzt bewerten
+              </span>
+            )}
             <span className="truncate pl-2 text-xs text-muted">{companionsLabel(entry.companions)}</span>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { ArrowLeft, Pencil, RotateCcw } from "lucide-react";
+import { ArrowLeft, Pencil, RotateCcw, Star } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -62,7 +62,7 @@ export default async function EntryDetailPage({ params, searchParams }: { params
       </div>
 
       <div className="flex flex-col gap-3.5 px-5 pt-4">
-        {search.gespeichert ? <SavedNotice kind={search.gespeichert === "bearbeitet" ? "edited" : "new"} badges={newBadges.map((b) => b.name)} /> : null}
+        {search.gespeichert ? <SavedNotice kind={search.gespeichert === "bearbeitet" ? "edited" : search.gespeichert === "bewertet" ? "rated" : "new"} open={entry.overall == null} badges={newBadges.map((b) => b.name)} /> : null}
 
         <div>
           <div className="flex flex-wrap items-center gap-2 text-[13px] text-muted">
@@ -80,10 +80,17 @@ export default async function EntryDetailPage({ params, searchParams }: { params
         </div>
 
         <div className="grid grid-cols-3 gap-2.5">
-          <div className="rounded-[14px] border-2 border-ink bg-accent px-3 py-2.5 text-white shadow-hard">
-            <div className="display text-2xl font-extrabold leading-none tabular-nums">{formatRating(entry.overall)} ★</div>
-            <div className="mt-1 text-xs">Bewertung</div>
-          </div>
+          {entry.overall != null ? (
+            <div className="rounded-[14px] border-2 border-ink bg-accent px-3 py-2.5 text-white shadow-hard">
+              <div className="display text-2xl font-extrabold leading-none tabular-nums">{formatRating(entry.overall)} ★</div>
+              <div className="mt-1 text-xs">Bewertung</div>
+            </div>
+          ) : (
+            <div className="rounded-[14px] border-2 border-dashed border-ink bg-accent-soft px-3 py-2.5 shadow-hard">
+              <div className="display text-2xl font-extrabold leading-none text-accent">Offen</div>
+              <div className="mt-1 text-xs text-muted">noch nicht bewertet</div>
+            </div>
+          )}
           <div className="rounded-[14px] border-2 border-ink bg-surface px-3 py-2.5 shadow-hard">
             <div className="display truncate text-2xl font-extrabold leading-none tabular-nums">{formatPrice(entry.priceCents, entry.currency.trim())}</div>
             <div className="mt-1 text-xs text-muted">Preis</div>
@@ -149,17 +156,29 @@ export default async function EntryDetailPage({ params, searchParams }: { params
           </div>
         ) : null}
 
+        {isOwner && entry.overall != null ? (
+          <Link href={`/eintrag/${entry.id}/bewerten`} className="flex min-h-11 items-center gap-2 self-start text-sm font-bold text-ink">
+            <Star size={16} aria-hidden="true" /> Bewertung ändern
+          </Link>
+        ) : null}
         {isOwner ? <DeleteEntryButton entryId={entry.id} /> : null}
       </div>
 
       <div className="fixed bottom-0 left-1/2 z-30 flex w-full max-w-[480px] -translate-x-1/2 gap-2.5 border-t-2 border-ink bg-ground px-5 pt-3.5 safe-bottom md:border-x-2">
-        <Link href={isOwner ? `/neu?von=${entry.id}` : `/neu?ort=${entry.placeId}`} className="btn btn-primary h-[52px] flex-1 text-base">
-          <RotateCcw size={18} strokeWidth={2.4} aria-hidden="true" />
-          {isOwner ? "Nochmal hier" : "Auch hier essen"}
-        </Link>
+        {isOwner && entry.overall == null ? (
+          <Link href={`/eintrag/${entry.id}/bewerten`} className="btn btn-primary h-[52px] flex-1 text-base">
+            <Star size={18} strokeWidth={2.4} aria-hidden="true" />
+            Jetzt bewerten
+          </Link>
+        ) : (
+          <Link href={isOwner ? `/neu?von=${entry.id}` : `/neu?ort=${entry.placeId}`} className="btn btn-primary h-[52px] flex-1 text-base">
+            <RotateCcw size={18} strokeWidth={2.4} aria-hidden="true" />
+            {isOwner ? "Nochmal hier" : "Auch hier essen"}
+          </Link>
+        )}
         <ShareButton
           title={`${entry.place.name} im Dönerbuch`}
-          text={`${entry.type.name} bei ${entry.place.name}: ${formatRating(entry.overall)} von 5 Sternen${entry.priceCents != null ? `, ${formatPrice(entry.priceCents, entry.currency.trim())}` : ""}.`}
+          text={`${entry.type.name} bei ${entry.place.name}${entry.overall != null ? `: ${formatRating(entry.overall)} von 5 Sternen` : ""}${entry.priceCents != null ? `, ${formatPrice(entry.priceCents, entry.currency.trim())}` : ""}.`}
         />
       </div>
     </main>
