@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { KebabIcon } from "@/components/logo";
 import { authClient } from "@/lib/auth-client";
-import { GoogleButton } from "./auth-shell";
+import { Divider, GoogleButton } from "./auth-shell";
 
 /** Entry point for signed-out visitors: two clear choices, nothing else. */
 export function AuthStart({ next, googleEnabled }: { next: string; googleEnabled: boolean }) {
@@ -22,20 +22,23 @@ export function AuthStart({ next, googleEnabled }: { next: string; googleEnabled
       </div>
 
       <div className="flex flex-col gap-3">
-        <Link href={`/registrieren${query}`} className="btn btn-primary w-full">
-          Neues Konto erstellen
+        <Link href={`/anmelden${query}`} className="btn btn-primary w-full">
+          Anmelden
         </Link>
-        <Link href={`/anmelden${query}`} className="btn btn-secondary h-14 w-full rounded-[14px] text-[17px] shadow-hard">
-          Ich habe schon ein Konto
+        <Link href={`/registrieren${query}`} className="btn btn-secondary h-14 w-full rounded-[14px] text-[17px] shadow-hard">
+          Registrieren
         </Link>
         {googleEnabled ? (
-          <GoogleButton
-            disabled={pending}
-            onClick={() => {
-              setPending(true);
-              void authClient.signIn.social({ provider: "google", callbackURL: next, newUserCallbackURL: "/willkommen" });
-            }}
-          />
+          <>
+            <Divider />
+            <GoogleButton
+              disabled={pending}
+              onClick={() => {
+                setPending(true);
+                void authClient.signIn.social({ provider: "google", callbackURL: next, newUserCallbackURL: "/willkommen" });
+              }}
+            />
+          </>
         ) : null}
       </div>
     </main>

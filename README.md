@@ -81,7 +81,7 @@ tests/              unit + DB tests (Vitest), e2e (Playwright)
 | `/statistik` | Month / year / all time |
 | `/freunde`, `/freunde/hinzufuegen`, `/freunde/einladung/[code]` | Ranking + feed, code/QR/search/requests, invite link target |
 | `/profil`, `/profil/bearbeiten`, `/profil/sorten` | Settings, badges, export, own types |
-| `/login` | Start page for signed-out visitors: "Neues Konto erstellen" / "Ich habe schon ein Konto" (+ Google) |
+| `/login` | Start page for signed-out visitors: "Anmelden" / "Registrieren", then "oder" + Google (if configured) |
 | `/anmelden`, `/registrieren`, `/willkommen` | Sign in, sign up, username onboarding |
 
 ## Rules worth knowing
