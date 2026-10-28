@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Dönerbuch – Journal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B1A17}a:hover{color:#C8321F}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F5F3EE; color: #1B1A17; font-family: 'DM Sans', system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 12px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="width: 40px; height: 40px; border-radius: 12px; background: {{accent}}; border: 2px solid #1B1A17; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 #1B1A17">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"></path><path d="M7 6h10l-1 4H8z"></path><path d="M6.5 10h11l-1.2 4.5H7.7z"></path><path d="M8 14.5h8l-1 3.5H9z"></path></svg>
+      </div>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.5px">Dönerbuch</h1>
+    </div>
+    <a href="Profil.dc.html" aria-label="Profil" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #1B1A17; background: #F6B814; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 16px; color: #1B1A17; display: flex; align-items: center; justify-content: center; text-decoration: none; box-sizing: border-box">NT</a>
+  </header>
+
+  <section aria-label="Statistik" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 4px 20px 16px">
+    <div style="background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 14px; padding: 12px; box-shadow: 3px 3px 0 #1B1A17">
+      <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1">47</div>
+      <div style="font-size: 12px; color: #5E5A52; margin-top: 6px">Döner gesamt</div>
+    </div>
+    <div style="background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 14px; padding: 12px; box-shadow: 3px 3px 0 #1B1A17">
+      <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1">4,1</div>
+      <div style="font-size: 12px; color: #5E5A52; margin-top: 6px">Ø Bewertung</div>
+    </div>
+    <div style="background: #F6B814; border: 2px solid #1B1A17; border-radius: 14px; padding: 12px; box-shadow: 3px 3px 0 #1B1A17">
+      <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1">6</div>
+      <div style="font-size: 12px; color: #1B1A17; margin-top: 6px">diesen Monat</div>
+    </div>
+  </section>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 20px 10px">
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px">Oktober 2026</h2>
+    <button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 2px solid #1B1A17; background: #FFFFFF; font-family: inherit; font-weight: 500; font-size: 13px; color: #1B1A17; display: flex; align-items: center; gap: 6px; cursor: pointer">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>
+      Filter
+    </button>
+  </div>
+
+  <ul style="list-style: none; margin: 0; padding: 0 20px 110px; display: flex; flex-direction: column; gap: 12px">
+    <sc-for list="{{entries}}" as="e" hint-placeholder-count="4">
+      <li>
+        <a href="Detail.dc.html" style="display: flex; gap: 12px; align-items: stretch; background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 16px; padding: 12px; text-decoration: none; color: #1B1A17; box-shadow: 3px 3px 0 #1B1A17">
+          <div style="width: 52px; flex-shrink: 0; border-radius: 10px; background: #F5F3EE; border: 2px solid #1B1A17; display: flex; flex-direction: column; align-items: center; justify-content: center">
+            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; line-height: 1">{{e.day}}</span>
+            <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px">{{e.wd}}</span>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{e.name}}</span>
+              <span style="font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; flex-shrink: 0">{{e.price}}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #5E5A52">
+              <span style="background: #F6B814; color: #1B1A17; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 6px; border: 1.5px solid #1B1A17">{{e.type}}</span>
+              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{e.place}}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px">
+              <div style="display: flex; gap: 2px" role="img" aria-label="{{e.ratingLabel}}">
+                <sc-for list="{{e.stars}}" as="s" hint-placeholder-count="5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="{{s.fill}}" stroke="#1B1A17" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"></path></svg>
+                </sc-for>
+              </div>
+              <span style="font-size: 12px; color: #5E5A52">{{e.with}}</span>
+            </div>
+          </div>
+        </a>
+      </li>
+    </sc-for>
+  </ul>
+
+  <nav aria-label="Hauptnavigation" style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; background: #FFFFFF; border-top: 2px solid #1B1A17; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding: 0 8px 10px; box-sizing: border-box">
+    <a href="Main.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: {{accent}}; font-size: 11px; font-weight: 700; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"></path><path d="M4 17a3 3 0 0 1 3-3h11"></path></svg>Journal</a>
+    <a href="Karte.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #5E5A52; font-size: 11px; font-weight: 500; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>Karte</a>
+    <a href="NeuerEintrag.dc.html" aria-label="Neuen Döner eintragen" style="justify-self: center; width: 58px; height: 58px; margin-top: -26px; border-radius: 18px; background: {{accent}}; border: 2px solid #1B1A17; box-shadow: 3px 3px 0 #1B1A17; display: flex; align-items: center; justify-content: center; color: #FFFFFF">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+    <a href="Freunde.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #5E5A52; font-size: 11px; font-weight: 500; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14a6.5 6.5 0 0 1 3.5 6"></path></svg>Freunde</a>
+    <a href="A-Statistik.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #5E5A52; font-size: 11px; font-weight: 500; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Statistik</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C8321F","options":["#C8321F","#1F6FC8","#2E7D4F"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const star = (n) => [1,2,3,4,5].map((i) => ({ fill: i <= n ? '#F6B814' : '#FFFFFF' }));
+    const raw = [
+      { day: '27', wd: 'DI', name: 'Bosporus Grill', price: '€ 7,50', type: 'Dürüm', place: 'Hauptstraße 12', r: 5, with: 'mit Lena' },
+      { day: '24', wd: 'SA', name: 'Anatolia Imbiss', price: '€ 6,90', type: 'Döner', place: 'Bahnhofplatz', r: 4, with: 'allein' },
+      { day: '19', wd: 'MO', name: 'Kebap Haus Ece', price: '€ 8,00', type: 'Döner-Box', place: 'Marktgasse 3', r: 3, with: 'mit Tim, Jonas' },
+      { day: '15', wd: 'DO', name: 'Mangal Ocakbaşı', price: '€ 11,50', type: 'Teller', place: 'Rheinufer 40', r: 4, with: 'mit Lena' },
+      { day: '11', wd: 'SO', name: 'Bosporus Grill', price: '€ 7,50', type: 'Döner', place: 'Hauptstraße 12', r: 5, with: 'allein' }
+    ];
+    return {
+      accent: this.props.accent ?? '#C8321F',
+      entries: raw.map((e) => ({ ...e, stars: star(e.r), ratingLabel: e.r + ' von 5 Sternen' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

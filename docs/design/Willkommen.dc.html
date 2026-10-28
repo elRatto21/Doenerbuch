@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Dönerbuch – Erster Start</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#1B1A17}a:hover{color:#C8321F}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F5F3EE; color: #1B1A17; font-family: 'DM Sans', system-ui, sans-serif; box-sizing: border-box">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 12px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="width: 40px; height: 40px; border-radius: 12px; background: {{accent}}; border: 2px solid #1B1A17; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0 #1B1A17">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"></path><path d="M7 6h10l-1 4H8z"></path><path d="M6.5 10h11l-1.2 4.5H7.7z"></path><path d="M8 14.5h8l-1 3.5H9z"></path></svg>
+      </div>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.5px">Dönerbuch</span>
+    </div>
+    <a href="Profil.dc.html" aria-label="Profil" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #1B1A17; background: #F6B814; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 16px; color: #1B1A17; display: flex; align-items: center; justify-content: center; text-decoration: none; box-sizing: border-box">NT</a>
+  </header>
+
+  <section aria-labelledby="leer" style="margin: 12px 20px 0; background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 20px; box-shadow: 4px 4px 0 #1B1A17; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px">
+    <div aria-hidden="true" style="width: 120px; height: 120px; border-radius: 60px; background: #F6B814; border: 2px solid #1B1A17; display: flex; align-items: center; justify-content: center">
+      <svg width="68" height="68" viewBox="0 0 24 24" fill="none" stroke="#1B1A17" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1.5v21"></path><path d="M7 5.5h10l-1 4H8z" fill="{{accent}}"></path><path d="M6.5 9.5h11l-1.2 4.5H7.7z" fill="#FFFFFF"></path><path d="M8 14h8l-1 3.5H9z" fill="{{accent}}"></path></svg>
+    </div>
+    <h1 id="leer" style="margin: 4px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1.1; letter-spacing: -0.4px">Dein Dönerbuch ist noch leer</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #5E5A52">Trag deinen ersten Döner ein – mit Ort, Preis und Bewertung. Ab dann wächst dein Journal mit jedem Bissen.</p>
+    <a href="NeuerEintrag.dc.html" style="margin-top: 6px; align-self: stretch; height: 56px; border-radius: 14px; background: {{accent}}; border: 2px solid #1B1A17; box-shadow: 3px 3px 0 #1B1A17; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 17px">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Ersten Döner eintragen</a>
+    <a href="FreundHinzufuegen.dc.html" style="align-self: stretch; height: 48px; border-radius: 14px; background: #FFFFFF; border: 2px solid #1B1A17; color: #1B1A17; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 700; font-size: 15px">Freunde einladen</a>
+  </section>
+
+  <section aria-labelledby="sofunkt" style="margin: 22px 20px 0">
+    <h2 id="sofunkt" style="margin: 0 0 10px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 17px">So funktioniert's</h2>
+    <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+      <li style="background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 14px; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px">
+        <span style="width: 30px; height: 30px; border-radius: 15px; background: #F6B814; border: 1.5px solid #1B1A17; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center">1</span>
+        <span style="font-weight: 700; font-size: 14px">Eintragen</span>
+        <span style="font-size: 12px; line-height: 1.35; color: #5E5A52">Sorte, Ort per GPS, Preis</span>
+      </li>
+      <li style="background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 14px; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px">
+        <span style="width: 30px; height: 30px; border-radius: 15px; background: #F6B814; border: 1.5px solid #1B1A17; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center">2</span>
+        <span style="font-weight: 700; font-size: 14px">Bewerten</span>
+        <span style="font-size: 12px; line-height: 1.35; color: #5E5A52">Sterne für Fleisch, Brot, Sauce …</span>
+      </li>
+      <li style="background: #FFFFFF; border: 2px solid #1B1A17; border-radius: 14px; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px">
+        <span style="width: 30px; height: 30px; border-radius: 15px; background: #F6B814; border: 1.5px solid #1B1A17; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center">3</span>
+        <span style="font-weight: 700; font-size: 14px">Vergleichen</span>
+        <span style="font-size: 12px; line-height: 1.35; color: #5E5A52">Statistik &amp; Rangliste mit Freunden</span>
+      </li>
+    </ol>
+  </section>
+
+  <nav aria-label="Hauptnavigation" style="position: absolute; left: 0; right: 0; bottom: 0; height: 84px; background: #FFFFFF; border-top: 2px solid #1B1A17; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding: 0 8px 10px; box-sizing: border-box">
+    <a href="Willkommen.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: {{accent}}; font-size: 11px; font-weight: 700; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"></path><path d="M4 17a3 3 0 0 1 3-3h11"></path></svg>Journal</a>
+    <a href="Karte.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #5E5A52; font-size: 11px; font-weight: 500; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>Karte</a>
+    <a href="NeuerEintrag.dc.html" aria-label="Neuen Döner eintragen" style="justify-self: center; width: 58px; height: 58px; margin-top: -26px; border-radius: 18px; background: {{accent}}; border: 2px solid #1B1A17; box-shadow: 3px 3px 0 #1B1A17; display: flex; align-items: center; justify-content: center; color: #FFFFFF">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+    <a href="Freunde.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #5E5A52; font-size: 11px; font-weight: 500; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14a6.5 6.5 0 0 1 3.5 6"></path></svg>Freunde</a>
+    <a href="A-Statistik.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; color: #5E5A52; font-size: 11px; font-weight: 500; min-height: 44px; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Statistik</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C8321F","options":["#C8321F","#1F6FC8","#2E7D4F"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#C8321F' };
+  }
+}
+</script>
+</body>
+</html>
