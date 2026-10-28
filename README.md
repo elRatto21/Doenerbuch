@@ -46,17 +46,17 @@ See [`.env.example`](.env.example). Required in production: `DATABASE_URL`, `BET
 - **Map tiles** come from OpenFreeMap (no key). Swap with `NEXT_PUBLIC_MAP_STYLE_URL` (build-time).
 - **Geocoding** sits behind the `Geocoder` interface in `src/server/geocode.ts`. Nominatim is rate-limited to 1 request/s per server process and cached on an ~11 m grid.
 
-## Deploy on Coolify (Nixpacks)
+## Deploy on Coolify (Dockerfile)
 
 1. **Postgres:** create a PostgreSQL resource and use its internal URL as `DATABASE_URL`.
 2. **Storage (R2 / MinIO / S3):** create a bucket (e.g. `doenerbuch`) and an API token / access key with read & write on it. Browsers upload directly with a presigned PUT, so:
    - `S3_ENDPOINT` = the S3 API endpoint, for R2 `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` (with `S3_REGION=auto`). Leave `S3_PUBLIC_ENDPOINT` empty unless the browser needs a different hostname than the server.
    - Photos are shown via signed URLs, so the bucket can stay private. Optionally set `S3_PUBLIC_URL` (e.g. the R2 `https://pub-….r2.dev` URL or a custom domain) to serve photos from the public URL instead.
    - Add a CORS rule on the bucket allowing your app origin with methods `PUT` and `GET` and header `content-type` (R2: bucket → Settings → CORS policy).
-3. **App:** add the repository with build pack **Nixpacks**, the branch you deploy (`main` once the MVP PR is merged, until then `feat/mvp`), base directory `/`, port **3000**. Set the env vars from `.env.example`.
-   - Nixpacks picks Node 24 from `engines` and pnpm 10 via corepack; `nixpacks.toml` installs a current corepack (Nixpacks' bundled one can't fetch pnpm 10) and starts with `pnpm start`.
-   - The build doesn't need any secrets, so env vars don't have to be marked "available at build time" – except `NEXT_PUBLIC_MAP_STYLE_URL` if you change it (inlined into the client bundle).
-   - Pending migrations run automatically on start (`RUN_MIGRATIONS=false` to opt out). Health check: `GET /api/health`.
+3. **App:** add the repository with build pack **Dockerfile**, the branch you deploy (`main` once the MVP PR is merged, until then `feat/mvp`), base directory `/`, port **3000**. Set the env vars from `.env.example`.
+   - The `Dockerfile` builds Next.js in standalone mode on Node 24 slim and runs `node server.js` as a non-root user; the image holds no dev dependencies or sources.
+   - Mark `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_MAP_STYLE_URL` as build variables: they are inlined into the client bundle. No secrets are needed at build time. Enable "Include Source Commit in Build" so `SOURCE_COMMIT` versions the service worker cache.
+   - Pending migrations run automatically on start (`RUN_MIGRATIONS=false` to opt out). Health check: `GET /api/health`, built into the image as `HEALTHCHECK` (the slim image has no curl/wget, so turn off Coolify's own health check or let it use the Docker one).
 
 ## Security
 

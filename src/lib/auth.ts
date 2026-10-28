@@ -10,7 +10,7 @@ import { USERNAME_PATTERN } from "@/lib/validation";
 export const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
 // `next build` imports this module while collecting page data; the build must not need
-// runtime secrets (e.g. on Coolify/Nixpacks). At runtime a missing secret still fails.
+// runtime secrets (e.g. on Coolify). At runtime a missing secret still fails.
 const isBuild = process.env.NEXT_PHASE === "phase-production-build";
 
 export const auth = betterAuth({
